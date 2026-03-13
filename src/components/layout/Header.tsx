@@ -120,10 +120,10 @@ export function Header() {
         <header
             className={`sticky top-0 z-40 bg-[var(--color-background)]/90 backdrop-blur-[24px] saturate-[180%] border-b border-border transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
         >
-            <div className="max-w-[1400px] mx-auto relative flex items-center justify-between h-16 md:h-20 px-4 sm:px-6 lg:px-12">
+            <div className="max-w-[1400px] mx-auto relative flex items-center justify-between h-16 md:h-20 pl-4 pr-1 sm:pl-6 sm:pr-2 md:px-6 lg:px-12">
 
                 {/* En mobile: logo centrado con position absolute. En desktop: logo + nav a la izquierda. */}
-                <div className="flex items-center gap-12 flex-1 min-w-0">
+                <div className="flex items-center gap-12 flex-1 min-w-0 md:min-w-0">
                     {/* Logo: en mobile centrado (absolute), en desktop en flujo normal */}
                     <Link
                         href="/"
@@ -215,8 +215,8 @@ export function Header() {
                     </nav>
                 </div>
 
-                {/* Actions: en mobile por encima del logo centrado para que sigan siendo clicables */}
-                <div className="relative z-10 flex items-center gap-2 md:gap-4 ml-auto">
+                {/* Actions: en mobile pegados a la derecha; en desktop ml-auto */}
+                <div className="relative z-10 flex items-center gap-1 sm:gap-2 md:gap-4 ml-auto shrink-0">
 
                     {/* Wishlist Button */}
                     <Link
