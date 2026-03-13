@@ -174,34 +174,22 @@ export default function EditarProductoPage() {
     setSubmitting(true)
     const supabase = createClient()
     try {
-      const payloadWithBrand = {
-        name: data.name,
-        description: data.description || null,
-        materials_care: data.materials_care?.trim() || null,
-        price: data.price,
-        original_price: data.original_price || null,
-        category_id: data.category_id,
-        brand_id: data.brand_id || null,
-        is_active: data.is_active,
-        is_featured: data.is_featured,
-        low_stock_alert: data.low_stock_alert,
-      }
-      const payloadWithoutBrand = {
-        name: data.name,
-        description: data.description || null,
-        materials_care: data.materials_care?.trim() || null,
-        price: data.price,
-        original_price: data.original_price || null,
-        category_id: data.category_id,
-        is_active: data.is_active,
-        is_featured: data.is_featured,
-        low_stock_alert: data.low_stock_alert,
-      }
+      // No enviar brand_id: la columna puede no existir en el proyecto (schema cache)
+      const { error: updateError } = await (supabase as any)
+        .from('products')
+        .update({
+          name: data.name,
+          description: data.description || null,
+          materials_care: data.materials_care?.trim() || null,
+          price: data.price,
+          original_price: data.original_price || null,
+          category_id: data.category_id,
+          is_active: data.is_active,
+          is_featured: data.is_featured,
+          low_stock_alert: data.low_stock_alert,
+        })
+        .eq('id', id)
 
-      let updateError = (await (supabase as any).from('products').update(payloadWithBrand).eq('id', id)).error
-      if (updateError?.message?.includes('brand_id')) {
-        updateError = (await (supabase as any).from('products').update(payloadWithoutBrand).eq('id', id)).error
-      }
       if (updateError) throw updateError
 
       await supabase.from('product_variants').delete().eq('product_id', id)

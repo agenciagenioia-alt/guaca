@@ -120,37 +120,24 @@ export default function NuevoProductoPage() {
       // 1. Crear producto (slug único a partir del nombre + timestamp)
       const baseSlug = slugify(data.name) || 'producto'
       const slug = `${baseSlug}-${Date.now()}`
-      const insertWithBrand = {
-        name: data.name,
-        slug,
-        description: data.description || null,
-        materials_care: data.materials_care?.trim() || null,
-        price: data.price,
-        original_price: data.original_price || null,
-        category_id: data.category_id,
-        brand_id: data.brand_id || null,
-        is_active: data.is_active,
-        is_featured: data.is_featured,
-        low_stock_alert: data.low_stock_alert,
-      } as any
-      const insertWithoutBrand = {
-        name: data.name,
-        slug,
-        description: data.description || null,
-        materials_care: data.materials_care?.trim() || null,
-        price: data.price,
-        original_price: data.original_price || null,
-        category_id: data.category_id,
-        is_active: data.is_active,
-        is_featured: data.is_featured,
-        low_stock_alert: data.low_stock_alert,
-      } as any
+      // No enviar brand_id: la columna puede no existir (schema cache)
+      const { data: newProduct, error: productError } = await supabase
+        .from('products')
+        .insert({
+          name: data.name,
+          slug,
+          description: data.description || null,
+          materials_care: data.materials_care?.trim() || null,
+          price: data.price,
+          original_price: data.original_price || null,
+          category_id: data.category_id,
+          is_active: data.is_active,
+          is_featured: data.is_featured,
+          low_stock_alert: data.low_stock_alert,
+        } as any)
+        .select()
+        .single()
 
-      let result = await supabase.from('products').insert(insertWithBrand).select().single()
-      if (result.error?.message?.includes('brand_id')) {
-        result = await supabase.from('products').insert(insertWithoutBrand).select().single()
-      }
-      const { data: newProduct, error: productError } = result
       if (productError) throw productError
       const typedProduct = newProduct as any
 
