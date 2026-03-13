@@ -196,7 +196,7 @@ export function Hero({ heroImageUrl, heroVideoUrl }: HeroProps) {
       <div className="relative z-10 flex flex-col items-start justify-center w-full max-w-[1400px] mx-auto px-5 sm:px-6 lg:px-12 pointer-events-none md:w-[60%]">
 
         {/* Typographic Lockup — mobile: tamaño reducido para que LA + GUACA no se corten */}
-        <div className="flex flex-col relative w-full max-w-[100%] overflow-hidden pointer-events-auto z-20">
+        <div className="flex flex-col relative w-full max-w-[100%] overflow-hidden md:overflow-visible pointer-events-auto z-20">
           {/* LÍNEA 1: "LA" */}
           <h1 className="font-heading font-bold text-[16vw] sm:text-[19vw] md:text-[17vw] leading-[0.85] tracking-[-0.02em] text-foreground select-none drop-shadow-2xl md:drop-shadow-none">
             LA
