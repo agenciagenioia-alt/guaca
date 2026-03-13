@@ -113,7 +113,7 @@ export function Header() {
             el.style.transform = 'translateY(100%)'
         } else {
             el.style.transition = 'none'
-            const px = Math.min(scrollYVal * 0.6, 48)
+            const px = Math.min(scrollYVal * 0.5, 72)
             el.style.transform = `translateY(${px}px)`
         }
     }
@@ -138,7 +138,7 @@ export function Header() {
                 if (isMobile) {
                     let nextVisible = isVisibleRef.current
                     if (currentScrollY < prevScrollY) nextVisible = true
-                    else if (currentScrollY > 80) nextVisible = false
+                    else if (currentScrollY > 200) nextVisible = false
 
                     if (nextVisible !== isVisibleRef.current) {
                         isVisibleRef.current = nextVisible
