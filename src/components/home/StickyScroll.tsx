@@ -66,13 +66,15 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
   // Layout especial mobile cuando hay video: sección full-screen limpia
   if (isMobile && videoUrl) {
     return (
-      <section className="relative w-full h-screen bg-black overflow-hidden flex items-center justify-center">
+      <section className="relative w-full h-screen bg-black overflow-hidden">
+        {/* object-cover + scale y object-position para ocultar marca de agua "Veo" y dejar solo LA GUACA visible */}
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="max-w-full max-h-full object-contain"
+          className="absolute inset-0 w-full h-full object-cover scale-110"
+          style={{ objectPosition: 'center 28%' }}
         >
           <source src={videoUrl} type="video/mp4" />
         </video>

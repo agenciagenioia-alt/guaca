@@ -120,14 +120,14 @@ export function Header() {
         <header
             className={`sticky top-0 z-40 bg-[var(--color-background)]/90 backdrop-blur-[24px] saturate-[180%] border-b border-border transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
         >
-            <div className="max-w-[1400px] mx-auto flex items-center justify-between h-16 md:h-20 px-4 sm:px-6 lg:px-12">
+            <div className="max-w-[1400px] mx-auto relative flex items-center justify-between h-16 md:h-20 px-4 sm:px-6 lg:px-12">
 
-                {/* Logo & Desktop Nav grouped. En mobile el logo queda centrado, en desktop a la izquierda con el menú. */}
-                <div className="flex items-center gap-12 flex-1">
-                    {/* Logo */}
+                {/* En mobile: logo centrado con position absolute. En desktop: logo + nav a la izquierda. */}
+                <div className="flex items-center gap-12 flex-1 min-w-0">
+                    {/* Logo: en mobile centrado (absolute), en desktop en flujo normal */}
                     <Link
                         href="/"
-                        className="font-heading text-[14px] tracking-[0.15em] text-foreground hover:text-foreground/80 transition-opacity uppercase font-bold w-full text-center md:w-auto md:text-left"
+                        className="font-heading text-[14px] tracking-[0.15em] text-foreground hover:text-foreground/80 transition-opacity uppercase font-bold absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0 md:text-left"
                         aria-label="La Guaca — Ir al inicio"
                         onClick={() => setMenuOpen(false)}
                     >
@@ -215,8 +215,8 @@ export function Header() {
                     </nav>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 md:gap-4 ml-auto">
+                {/* Actions: en mobile por encima del logo centrado para que sigan siendo clicables */}
+                <div className="relative z-10 flex items-center gap-2 md:gap-4 ml-auto">
 
                     {/* Wishlist Button */}
                     <Link
