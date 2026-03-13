@@ -1,0 +1,61 @@
+﻿src/app/admin/(dashboard)/banners/page.tsx(50,24): error TS2339: Property 'hero_video_url' does not exist on type 'never'.
+src/app/admin/(dashboard)/banners/page.tsx(52,31): error TS2339: Property 'hero_video_url' does not exist on type 'never'.
+src/app/admin/(dashboard)/banners/page.tsx(58,27): error TS2339: Property 'hero_image_url' does not exist on type 'never'.
+src/app/admin/(dashboard)/banners/page.tsx(60,31): error TS2339: Property 'hero_image_url' does not exist on type 'never'.
+src/app/admin/(dashboard)/banners/page.tsx(90,52): error TS2339: Property 'hero_video_url' does not exist on type 'never'.
+src/app/admin/(dashboard)/banners/page.tsx(93,53): error TS2339: Property 'hero_image_url' does not exist on type 'never'.
+src/app/admin/(dashboard)/categorias/page.tsx(64,30): error TS2339: Property 'id' does not exist on type 'never'.
+src/app/admin/(dashboard)/categorias/page.tsx(70,32): error TS2339: Property 'image_url' does not exist on type 'never'.
+src/app/admin/(dashboard)/categorias/page.tsx(72,40): error TS2339: Property 'image_url' does not exist on type 'never'.
+src/app/admin/(dashboard)/categorias/page.tsx(73,40): error TS2339: Property 'name' does not exist on type 'never'.
+src/app/admin/(dashboard)/categorias/page.tsx(85,32): error TS2339: Property 'name' does not exist on type 'never'.
+src/app/admin/(dashboard)/categorias/page.tsx(90,48): error TS2339: Property 'slug' does not exist on type 'never'.
+src/app/admin/(dashboard)/categorias/page.tsx(93,28): error TS2339: Property 'products' does not exist on type 'never'.
+src/app/admin/(dashboard)/categorias/page.tsx(99,33): error TS2339: Property 'is_active' does not exist on type 'never'.
+src/app/admin/(dashboard)/categorias/page.tsx(103,32): error TS2339: Property 'is_active' does not exist on type 'never'.
+src/app/admin/(dashboard)/categorias/page.tsx(108,28): error TS2339: Property 'display_order' does not exist on type 'never'.
+src/app/admin/(dashboard)/configuracion/page.tsx(94,17): error TS2345: Argument of type 'any' is not assignable to parameter of type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(41,15): error TS2345: Argument of type '{ status: string; tracking_code: string | null; updated_at: string; }' is not assignable to parameter of type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(52,41): error TS2339: Property 'customer_phone' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(52,77): error TS2339: Property 'customer_name' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(52,168): error TS2339: Property 'order_number' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(66,29): error TS2339: Property 'order_number' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(70,31): error TS2339: Property 'created_at' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(77,19): error TS2339: Property 'status' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(79,23): error TS2339: Property 'status' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(81,23): error TS2339: Property 'status' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(81,53): error TS2339: Property 'status' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(86,18): error TS2339: Property 'status' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(100,22): error TS2339: Property 'items' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(124,60): error TS2339: Property 'total' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(126,20): error TS2339: Property 'notes' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(129,54): error TS2339: Property 'notes' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(148,39): error TS2339: Property 'status' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(166,39): error TS2339: Property 'tracking_code' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(192,51): error TS2339: Property 'customer_name' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(197,51): error TS2339: Property 'customer_phone' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(219,75): error TS2339: Property 'customer_address' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(223,51): error TS2339: Property 'customer_city' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/[id]/page.tsx(237,26): error TS2339: Property 'wompi_reference' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(64,32): error TS2339: Property 'id' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(70,34): error TS2339: Property 'order_number' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(72,32): error TS2339: Property 'wompi_reference' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(73,113): error TS2339: Property 'wompi_reference' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(74,41): error TS2339: Property 'wompi_reference' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(81,32): error TS2339: Property 'customer_name' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(84,32): error TS2339: Property 'customer_phone' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(88,39): error TS2339: Property 'created_at' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(96,40): error TS2339: Property 'total' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(101,33): error TS2339: Property 'status' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(103,37): error TS2339: Property 'status' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(105,37): error TS2339: Property 'status' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(105,67): error TS2339: Property 'status' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(110,32): error TS2339: Property 'status' does not exist on type 'never'.
+src/app/admin/(dashboard)/pedidos/page.tsx(116,57): error TS2339: Property 'id' does not exist on type 'never'.
+src/app/admin/login/page.tsx(25,7): error TS2304: Cannot find name 'setError'.
+src/app/admin/login/page.tsx(36,7): error TS2304: Cannot find name 'setError'.
+src/app/admin/login/page.tsx(38,7): error TS2304: Cannot find name 'setError'.
+src/app/sitemap.ts(15,41): error TS2339: Property 'slug' does not exist on type 'never'.
+src/app/sitemap.ts(16,36): error TS2339: Property 'updated_at' does not exist on type 'never'.
+src/app/sitemap.ts(28,52): error TS2339: Property 'slug' does not exist on type 'never'.
+src/app/sitemap.ts(29,37): error TS2339: Property 'updated_at' does not exist on type 'never'.

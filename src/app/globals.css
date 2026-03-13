@@ -1,26 +1,461 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ═══════════════════════════════════════════
+   LA GUACA — Design System Tokens (Tailwind v4)
+   ═══════════════════════════════════════════ */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Colores primarios (Gallery Mode / Light Luxury) */
+  --color-background: #FDFDFB; /* Blanco Alabastro Ultra Puro */
+  --color-surface: #F5F5F3;    /* Gris Suavísimo para ligeros volúmenes */
+  --color-surface-hover: #EBEBE9; 
+  
+  /* Textos / Tintas */
+  --color-foreground: #111110;       /* Tinta Negra Pura */
+  --color-foreground-muted: #555555; /* Gris Plomo */
+  --color-foreground-subtle: #888888;/* Gris Ceniza */
+  --color-overlay: rgba(253, 253, 251, 0.95);
+
+  /* Acentos (Negro Carbón para botones primarios) */
+  --color-gold: #111110; 
+  --color-gold-hover: #000000;
+  --color-lime: #111110;
+
+  /* Estados */
+  --color-error: #D93025;      /* Rojo clásico limpio */
+  --color-success: #1E8E3E;    /* Verde inglés */
+  --color-warning: #F29900;
+  --color-info: #1A73E8;
+
+  /* Orden status */
+  --color-status-pending: #F29900;
+  --color-status-confirmed: #1A73E8;
+  --color-status-preparing: #E37400;
+  --color-status-shipped: #A1A1AA;
+  --color-status-delivered: #1E8E3E;
+  --color-status-cancelled: #D93025;
+
+  /* Bordes */
+  --color-border: rgba(17, 17, 16, 0.08); /* Líneas de borde gris perla ahumado */
+  --color-border-hover: rgba(17, 17, 16, 0.25);
+
+  /* Tipografía */
+  --font-display: 'Bebas Neue', system-ui, sans-serif;
+  --font-heading: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  /* Border radius del sistema (Mantenido estricto a 0 para Brutalismo Elegante Light) */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+
+  /* Sombras tema Light Clean */
+  --shadow-card: none; /* Sin sombras para look arquitectónico 2D */
+  --shadow-modal: 0 40px 80px rgba(0, 0, 0, 0.15); /* Sombra pesada solo para focus de Modales */
+  --shadow-glow: none; /* Extirpado */
+
+  /* Transitions */
+  --ease-micro: 100ms ease-out;
+  --ease-state: 200ms ease-in-out;
+  --ease-page: 300ms ease-in-out;
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ═══════════════════════════════════════════
+   Base Styles & Resets
+   ═══════════════════════════════════════════ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  /* Sin background image radial, total blancura sólida */
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-bebas);
+  color: var(--color-foreground);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .rotate-x-90 {
+    transform: rotateX(90deg);
+  }
+
+  .-rotate-x-90 {
+    transform: rotateX(-90deg);
+  }
+
+  .rotate-x-0 {
+    transform: rotateX(0deg);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   Accesibilidad — Focus Visible
+   ═══════════════════════════════════════════ */
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════
+   Accesibilidad — Reduced Motion
+   ═══════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   Cursor personalizado (solo dispositivos con hover)
+   ═══════════════════════════════════════════ */
+
+@media (hover: hover) {
+  *,
+  *::before,
+  *::after {
+    cursor: none !important;
+  }
+}
+
+@keyframes cursorLabelIn {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   Tipografía Global
+   ═══════════════════════════════════════════ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+p,
+li,
+label,
+input,
+textarea,
+select {
+  max-width: 75ch;
+}
+
+/* ═══════════════════════════════════════════
+   Touch Targets — Mínimo 44x44px
+   ═══════════════════════════════════════════ */
+
+button,
+a,
+[role="button"],
+input[type="checkbox"],
+input[type="radio"],
+select {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Excepción para links de texto inline */
+p a,
+li a,
+span a {
+  min-height: unset;
+  min-width: unset;
+}
+
+/* ═══════════════════════════════════════════
+   Elementos Deshabilitados
+   ═══════════════════════════════════════════ */
+
+[disabled],
+.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════
+   Scrollbar Custom (dark theme)
+   ═══════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(232, 230, 225, 0.15);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(232, 230, 225, 0.3);
+}
+
+/* ═══════════════════════════════════════════
+   Utilidades Personalizadas
+   ═══════════════════════════════════════════ */
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg,
+      var(--color-surface) 25%,
+      var(--color-surface-hover) 50%,
+      var(--color-surface) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Urgencia pulse */
+.pulse-urgency {
+  animation: pulse-fast 0.3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-fast {
+
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes mobile-spotlight {
+
+  0%,
+  100% {
+    opacity: 0.07;
+  }
+
+  50% {
+    opacity: 0.12;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-reverse {
+  0% {
+    transform: translateX(-50%);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-up {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Badge bounce */
+.bounce-badge {
+  animation: badge-bounce 300ms var(--ease-bounce);
+}
+
+@keyframes badge-bounce {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  30% {
+    transform: scale(1.4);
+  }
+
+  70% {
+    transform: scale(0.9);
+  }
+}
+
+/* Shake para errores */
+.shake {
+  animation: shake 400ms ease-out;
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-8px);
+  }
+
+  75% {
+    transform: translateX(8px);
+  }
+}
+
+/* CTA glow hover */
+.glow-gold:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+/* Hide scrollbar pero permite scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Precio COP formateado */
+.price-cop {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Custom Cursor Desactivado para Light Theme (Interfiere con pureza) */
+
+/* Mobile Static Glow Hero Fallback */
+.hero-static-glow {
+  background: radial-gradient(ellipse 60% 40% at 50% 50%,
+      rgba(255, 215, 0, 0.06),
+      transparent 70%);
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Admin: indicador de subida de imagen (barra indeterminada) */
+@keyframes admin-loading-bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+.admin-upload-indicator {
+  animation: admin-loading-bar 1.4s ease-in-out infinite;
+}
+
+/* Sticky section (Cultura/Calidad/Exclusividad): fondo dinámico que juega con el blanco */
+@keyframes sticky-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.4; }
+  33% { transform: translate(4%, -3%) scale(1.05); opacity: 0.5; }
+  66% { transform: translate(-2%, 2%) scale(0.98); opacity: 0.35; }
+}
+@keyframes sticky-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.35; }
+  50% { transform: translate(-5%, 4%) scale(1.08); opacity: 0.45; }
+}
+@keyframes sticky-float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; }
+  50% { transform: translate(3%, -2%) scale(1.03); opacity: 0.4; }
+}
+@keyframes sticky-gradient-drift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.sticky-dynamic-bg {
+  pointer-events: none;
+}
+.sticky-blob-1 { animation: sticky-float-1 22s ease-in-out infinite; }
+.sticky-blob-2 { animation: sticky-float-2 26s ease-in-out infinite; }
+.sticky-blob-3 { animation: sticky-float-3 20s ease-in-out infinite; }

@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# La Guaca E-commerce
 
-## Getting Started
+Plataforma de comercio electrónico para streetwear, diseñada con un enfoque absoluto en conversión, tráfico móvil desde Meta Ads y UX premium. Desarrollada en **Next.js 14**, **Supabase** y **Tailwind CSS**.
 
-First, run the development server:
+## ✨ Características Principales
 
-```bash
+*   **⚡ Rendimiento Extremo:** Next.js App Router, componentes de servidor por defecto, carga de imágenes priorizada.
+*   **📱 Mobile-First Real:** Interfaces optimizadas para pulgares y atención corta (3-8 segundos).
+*   **🎨 Diseño Premium:** Tema oscuro profundo (`#0A0A0A`), tipografía de impacto (Space Grotesk, Bebas Neue), y detalles en oro (`#FFD700`).
+*   **🛒 Checkout Ultra-ágil:** Sin registro forzado. Tres pasos simples. Integrado directamente con Wompi para pagos linkados en Colombia.
+*   **💬 Notificaciones Proactivas:** Confirmación de pedidos directamente generados en formato WhatsApp para un contacto humano y cercano.
+*   **🎛️ Panel Admin Completo:** Gestión total de catálogo, pedidos, banners y configuración global. Pensado para un dueño de negocio sin conocimientos técnicos.
+*   **🔒 Seguridad:** Autenticación por sesión asilada, Row Level Security (RLS) total en BD de Supabase.
+
+## 🚀 Guía Rápida de Instalación
+
+### 1. Clonar e Instalar Independencias
+\`\`\`bash
+git clone <tu-repositorio>
+cd guaca
+npm install
+\`\`\`
+
+### 2. Configurar Base de Datos (Supabase)
+1. Ve a [Supabase](https://supabase.com/) y crea un nuevo proyecto guiado.
+2. Abre el SQL Editor en tu dashboard de Supabase.
+3. Copia y pega el contenido del archivo `supabase/schema.sql` y ejecútalo. Esto creará todas las tablas, buckets (para imágenes), políticas y disparadores automáticos.
+4. (Opcional) Copia y pega el contenido de `supabase/seed.sql` para tener datos de prueba (productos, configuraciones base). **Importante:** Recuerda subir imágenes de prueba a tu bucket si usas el seed o cambiar las URLs generadas.
+
+### 3. Configurar Variables de Entorno
+Crea un archivo `.env.local` en la raíz copiando el ejemplo:
+\`\`\`bash
+cp .env.example .env.local
+\`\`\`
+Rellena tus credenciales (las encuentras en "Project Settings" > "API" en Supabase):
+\`\`\`env
+NEXT_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJh...
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+\`\`\`
+
+### 4. Crear Credenciales del Administrador
+Abre el SQL Editor en Supabase y ejecuta este script rápido para dar de alta el correo que usará el dueño de la tienda **(reemplaza con tu correo)**:
+\`\`\`sql
+-- 1. Primero, crea manualmente un usuario en el panel "Authentication" > "Users" de Supabase con el correo y clave que prefieras.
+-- 2. Una vez creado, copia su UUID o directamente inserta su correo en la tabla auth_roles así:
+
+INSERT INTO public.user_roles (user_id, role)
+SELECT id, 'admin' FROM auth.users WHERE email = 'correo.del.admin@ejemplo.com';
+\`\`\`
+
+### 5. Iniciar Servidor de Desarrollo
+\`\`\`bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+\`\`\`
+La tienda estará en `http://localhost:3000` y el acceso de administrador en `http://localhost:3000/admin/login`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 💳 Configuración de Wompi (Link de Pagos)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Esta tienda **no maneja la pasarela API compleja de Wompi intencionalmente**. Para facilitar mantenimiento, seguridad y reducir fricción técnica al dueño usamos la **solución de Links de Pago de Wompi**.
 
-## Learn More
+1. Ingresa a tu Dashboard de Wompi Comercio.
+2. Crea un **Link de Cobro**.
+3. Configúralo así:
+    - **Nombre del producto:** (Déjalo abierto / Editable por el usuario — El link mágico permite definir el precio externamente)
+    - **Precio:** (Déjalo abierto) 
+    - Guarda y copia el Link de tu comercio (ej. `https://checkout.wompi.co/l/VPOS_XXXXX`)
+4. Entra en tu **Panel de Administrador de La Guaca** > Configuración.
+5. Pega ese enlace en la sección "Mágico de Wompi".
+6. ¡Listo! Automáticamente, la tienda enviará a cada compra la referencia (`?reference=LG-XXXX-XXXX`) de cada pedido.
 
-To learn more about Next.js, take a look at the following resources:
+## 🤝 Soporte y Funcionalidades Adicionales
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Cualquier cambio de diseño complejo adicional u otra pasarela de pago (PayU, MercadoPago full checkout) que requiera integración de backend debe validarse adaptando la ruta actual del checkout. El código actual usa Server Actions híbrido y Zustand state en el cliente para el carrito total.
