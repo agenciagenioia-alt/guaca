@@ -5,7 +5,6 @@ import { Footer } from '@/components/layout/Footer'
 import { AnnouncementMarquee } from '@/components/home/AnnouncementMarquee'
 import { CartDrawer } from '@/components/cart/CartDrawer'
 import { CartReminderBar } from '@/components/cart/CartReminderBar'
-import { WhatsAppFloat } from '@/components/ui/WhatsAppFloat'
 import { ToastContainer } from '@/components/ui/ToastContainer'
 
 export default async function StoreLayout({
@@ -82,9 +81,6 @@ export default async function StoreLayout({
             />
             <CartDrawer outfitEnabled={outfitProducts.length > 0 && (configData?.outfit_section_enabled as boolean) === true} outfitProducts={outfitProducts} />
             <CartReminderBar />
-            {configData?.owner_whatsapp && (
-                <WhatsAppFloat phone={String(configData.owner_whatsapp)} />
-            )}
             <ToastContainer />
         </>
     )
