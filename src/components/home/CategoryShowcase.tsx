@@ -67,14 +67,14 @@ export function CategoryShowcase({ categories }: CategoryShowcaseProps) {
                   src={getCategoryImage(cat.slug, cat.image_url)}
                   alt={cat.name}
                   fill
-                  className="object-cover grayscale opacity-50 group-hover/card:grayscale-0 group-hover/card:opacity-100 group-hover/card:scale-105 transition-all duration-[1s] ease-out"
+                  className="object-cover opacity-90 group-hover/card:opacity-100 group-hover/card:scale-105 transition-all duration-[1s] ease-out"
                   sizes="(max-width: 768px) 100vw, 30vw"
                   loading="lazy"
                 />
                 
-                {/* Gradient Overlays for contrast */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[#111110]/40 to-transparent group-hover/card:opacity-0 transition-opacity duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#111110] via-[#111110]/20 to-transparent opacity-90 group-hover/card:opacity-70 transition-opacity duration-700" />
+                {/* Gradient Overlays para contraste pero dejando ver el color */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#111110]/20 to-transparent group-hover/card:opacity-0 transition-opacity duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#111110]/70 via-[#111110]/30 to-transparent opacity-80 group-hover/card:opacity-60 transition-opacity duration-700" />
               </div>
 
               {/* Numbering (01, 02, etc) */}

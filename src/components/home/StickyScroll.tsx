@@ -63,6 +63,59 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [isMobile])
 
+  // Layout especial mobile cuando hay video: sección full-screen limpia
+  if (isMobile && videoUrl) {
+    return (
+      <section className="relative w-full h-screen bg-black overflow-hidden">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src={videoUrl} type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+        <div className="relative z-10 h-full flex flex-col items-center justify-end pb-16 px-6 text-center">
+          <div className="mb-6">
+            {phase === 0 && (
+              <>
+                <h3 className="font-heading text-5xl text-[#E8E6E1] uppercase tracking-[0.25em]">
+                  Cultura
+                </h3>
+                <p className="mt-3 font-mono text-xs text-[#E8E6E1]/70 tracking-[0.15em] uppercase max-w-xs mx-auto">
+                  No vendemos ropa. Entregamos las herramientas para que construyas tu propia identidad.
+                </p>
+              </>
+            )}
+            {phase === 1 && (
+              <>
+                <h3 className="font-heading text-5xl text-transparent uppercase tracking-[0.25em]" style={{ WebkitTextStroke: '2px #E8E6E1' }}>
+                  Calidad
+                </h3>
+                <p className="mt-3 font-mono text-xs text-[#E8E6E1]/70 tracking-[0.15em] uppercase max-w-xs mx-auto">
+                  Seleccionamos piezas premium de marcas que dictan las reglas en el streetwear global.
+                </p>
+              </>
+            )}
+            {phase === 2 && (
+              <>
+                <h3 className="font-heading text-5xl text-[#E8E6E1] uppercase tracking-[0.25em]">
+                  Exclusividad
+                </h3>
+                <p className="mt-3 font-mono text-xs text-[#E8E6E1]/70 tracking-[0.15em] uppercase max-w-xs mx-auto">
+                  Cantidades limitadas. Cuando un drop se va, se fue para siempre. Esto es La Guaca.
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section ref={containerRef} className="relative w-full h-[80vh] md:h-[280vh]">
       {/* The sticky container that locks into the viewport */}

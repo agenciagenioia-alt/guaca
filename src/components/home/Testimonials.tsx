@@ -108,9 +108,9 @@ export function Testimonials() {
             </h2>
           </div>
 
-          {/* Navigation arrows */}
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-mono text-foreground-muted tracking-widest uppercase mr-3 hidden md:block">
+          {/* Navigation arrows (solo desktop) */}
+          <div className="hidden md:flex items-center gap-3">
+            <span className="text-xs font-mono text-foreground-muted tracking-widest uppercase mr-3">
               {currentIndex + 1} / {maxIndex + 1}
             </span>
             <button
@@ -185,19 +185,7 @@ export function Testimonials() {
           </div>
         </div>
 
-        {/* Progress dots */}
-        <div className="flex items-center justify-center gap-2 mt-8">
-          {Array.from({ length: maxIndex + 1 }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => { goTo(i); pauseAuto() }}
-              className={`h-[3px] rounded-full transition-all duration-500 ${
-                i === currentIndex ? 'bg-foreground w-8' : 'bg-border w-3 hover:bg-foreground/30'
-              }`}
-              aria-label={`Ir a reseña ${i + 1}`}
-            />
-          ))}
-        </div>
+        {/* Sin puntos de paginación para un look más limpio en mobile */}
       </div>
     </section>
   )
