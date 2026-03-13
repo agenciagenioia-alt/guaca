@@ -101,7 +101,6 @@ export default function AdminNosotrosPage() {
 
   const uploadFile = async (file: File, folder: string): Promise<string | null> => {
     if (file.size > LARGE_FILE_THRESHOLD) {
-      // Subida directa a Supabase con URL firmada (sin límite de peso por Vercel)
       const urlRes = await fetch('/api/admin/upload-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -110,12 +109,13 @@ export default function AdminNosotrosPage() {
       })
       const urlData = await urlRes.json().catch(() => ({}))
       if (!urlRes.ok || !urlData.path || !urlData.token || !urlData.publicUrl) {
-        setMessage({ type: 'error', text: urlData?.error || 'Error al obtener URL de subida' })
+        const errMsg = urlData?.error || (urlRes.status === 401 ? 'Sesión expirada. Cierra sesión y vuelve a entrar al admin.' : `Error al obtener URL de subida (${urlRes.status})`)
+        setMessage({ type: 'error', text: errMsg })
         return null
       }
       const { error } = await (supabase as any).storage.from('product-images').uploadToSignedUrl(urlData.path, urlData.token, file, { contentType: file.type || undefined })
       if (error) {
-        setMessage({ type: 'error', text: error.message || 'Error subiendo archivo' })
+        setMessage({ type: 'error', text: error.message || 'Error subiendo archivo a Supabase.' })
         return null
       }
       return urlData.publicUrl
@@ -133,9 +133,11 @@ export default function AdminNosotrosPage() {
       if (res.status === 413) data = { error: 'Archivo demasiado grande (máx. 4 MB). Comprime el video o usa uno más corto.' }
     }
     if (!res.ok) {
-      const msg = res.status === 413
-        ? (data?.error || 'Archivo demasiado grande. Comprime el video o usa uno más corto.')
-        : (data?.error || 'Error subiendo archivo')
+      const msg = res.status === 401
+        ? (data?.error || 'Sesión expirada. Cierra sesión y vuelve a entrar al admin.')
+        : res.status === 413
+          ? (data?.error || 'Archivo demasiado grande. Comprime el video o usa uno más corto.')
+          : (data?.error || `Error subiendo archivo (${res.status}). Revisa que SUPABASE_SERVICE_ROLE_KEY y el bucket "product-images" estén configurados en Vercel/Supabase.`)
       setMessage({ type: 'error', text: msg })
       return null
     }
