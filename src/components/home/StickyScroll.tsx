@@ -63,25 +63,37 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [isMobile])
 
-  // Layout especial mobile cuando hay video: sección full-screen limpia
+  // Layout especial mobile cuando hay video: video minimizado (sin marca Veo) y zonas rellenadas
   if (isMobile && videoUrl) {
     return (
-      <section className="relative w-full h-screen bg-black overflow-hidden">
-        {/* object-cover + scale y object-position para ocultar marca de agua "Veo" y dejar solo LA GUACA visible */}
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover scale-110"
-          style={{ objectPosition: 'center 28%' }}
-        >
-          <source src={videoUrl} type="video/mp4" />
-        </video>
+      <section className="relative w-full h-screen bg-[#0a0a0a] overflow-hidden flex flex-col items-center justify-center">
+        {/* Fondo de las zonas “negras”: gradiente + líneas diagonales sutiles */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#111] to-[#0a0a0a]" />
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: `repeating-linear-gradient(120deg, transparent, transparent 40px, rgba(232,230,225,0.03) 40px, rgba(232,230,225,0.03) 41px)`,
+          }}
+        />
 
-        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        {/* Video minimizado: recuadro centrado para ocultar marca de agua y verse más completo */}
+        <div className="relative w-[92%] max-w-[420px] aspect-[9/16] rounded-lg overflow-hidden shadow-2xl ring-1 ring-white/10 flex-shrink-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: 'center 28%' }}
+          >
+            <source src={videoUrl} type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 pointer-events-none rounded-lg ring-inset ring-black/20" />
+        </div>
 
-        <div className="absolute inset-x-0 bottom-10 px-6 text-center">
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-[#0a0a0a]/95 via-transparent to-[#0a0a0a]/80" />
+
+        <div className="absolute inset-x-0 bottom-8 px-6 text-center z-10">
           <div className="mb-4">
             {phase === 0 && (
               <>
