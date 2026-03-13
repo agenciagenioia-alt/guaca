@@ -23,9 +23,29 @@ export default function WompiButton({
   const [ready, setReady] = useState(false)
   const [error, setError] = useState(false)
 
+  const hasValidParams =
+    typeof publicKey === 'string' &&
+    publicKey.trim().length > 0 &&
+    typeof signature === 'string' &&
+    signature.trim().length > 0 &&
+    Number(amountInCents) > 0 &&
+    typeof reference === 'string' &&
+    reference.trim().length > 0 &&
+    typeof redirectUrl === 'string' &&
+    redirectUrl.trim().length > 0
+
   useEffect(() => {
+    if (!hasValidParams) {
+      setError(true)
+      return
+    }
     const container = containerRef.current
     if (!container) return
+
+    const pk = String(publicKey).trim()
+    const sig = String(signature).trim()
+    const ref = String(reference).trim()
+    const url = String(redirectUrl).trim()
 
     // Small delay to ensure DOM is fully painted before injecting widget
     const timer = setTimeout(() => {
@@ -37,14 +57,14 @@ export default function WompiButton({
         const script = document.createElement('script')
         script.src = 'https://checkout.wompi.co/widget.js'
         script.setAttribute('data-render', 'button')
-        script.setAttribute('data-public-key', publicKey)
+        script.setAttribute('data-public-key', pk)
         script.setAttribute('data-currency', 'COP')
         script.setAttribute('data-amount-in-cents', String(amountInCents))
-        script.setAttribute('data-reference', reference)
-        script.setAttribute('data-signature:integrity', signature)
-        script.setAttribute('data-redirect-url', redirectUrl)
-        if (customerEmail) {
-          script.setAttribute('data-customer-data:email', customerEmail)
+        script.setAttribute('data-reference', ref)
+        script.setAttribute('data-signature:integrity', sig)
+        script.setAttribute('data-redirect-url', url)
+        if (customerEmail && typeof customerEmail === 'string' && customerEmail.trim()) {
+          script.setAttribute('data-customer-data:email', customerEmail.trim())
         }
 
         script.onload = () => setReady(true)
@@ -62,7 +82,7 @@ export default function WompiButton({
       clearTimeout(timer)
       if (container) container.innerHTML = ''
     }
-  }, [publicKey, amountInCents, reference, signature, customerEmail, redirectUrl])
+  }, [hasValidParams, publicKey, amountInCents, reference, signature, customerEmail, redirectUrl])
 
   if (error) {
     return (

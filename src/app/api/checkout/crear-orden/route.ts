@@ -145,8 +145,13 @@ export async function POST(req: NextRequest) {
     if (!publicKey || !integrityKey) {
       return NextResponse.json({ error: 'Configuración de pago incompleta. Revisa NEXT_PUBLIC_WOMPI_PUBLIC_KEY y WOMPI_INTEGRITY_KEY en Vercel.' }, { status: 500 })
     }
+    const pk = publicKey.trim()
+    const sigSecret = integrityKey.trim()
+    if (!pk || !sigSecret) {
+      return NextResponse.json({ error: 'Llaves de Wompi vacías. Revisa las variables en Vercel.' }, { status: 500 })
+    }
     // Firma Wompi: Reference + Amount (centavos) + Currency + IntegritySecret
-    const signatureString = `${orderNumber}${amountInCents}${currency}${integrityKey}`
+    const signatureString = `${orderNumber}${amountInCents}${currency}${sigSecret}`
     const signature = crypto.createHash('sha256').update(signatureString).digest('hex')
 
     return NextResponse.json({
@@ -154,7 +159,7 @@ export async function POST(req: NextRequest) {
       orderNumber,
       amountInCents,
       signature,
-      publicKey,
+      publicKey: pk,
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Error interno'

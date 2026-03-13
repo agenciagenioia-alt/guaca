@@ -154,11 +154,17 @@ export default function CheckoutPage() {
             }
 
             const data = await res.json()
+            const pk = typeof data.publicKey === 'string' ? data.publicKey.trim() : ''
+            if (!pk) {
+                setErrors({ form: 'Error: no se recibió la llave de pago. Revisa NEXT_PUBLIC_WOMPI_PUBLIC_KEY en Vercel.' })
+                setIsLoading(false)
+                return
+            }
             setWompiData({
                 orderNumber: data.orderNumber,
                 amountInCents: data.amountInCents,
                 signature: data.signature,
-                publicKey: data.publicKey,
+                publicKey: pk,
             })
             window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
         } catch (error) {
@@ -310,7 +316,7 @@ export default function CheckoutPage() {
 
                         {/* MOBILE: botón enviar o Wompi */}
                         <div className="block lg:hidden mt-4 pb-12">
-                            {wompiData && redirectUrl ? (
+                            {wompiData?.publicKey && redirectUrl ? (
                                 <div className="pt-4 border-t border-border">
                                     <p className="text-[13px] text-foreground font-mono uppercase tracking-widest mb-4">
                                         Orden {wompiData.orderNumber} — Paga ahora
@@ -411,7 +417,7 @@ export default function CheckoutPage() {
 
                         {/* DESKTOP CTA */}
                         <div className="hidden lg:block mt-10">
-                            {wompiData && redirectUrl ? (
+                            {wompiData?.publicKey && redirectUrl ? (
                                 <div className="pt-4 border-t border-border">
                                     <p className="text-[13px] text-foreground font-mono uppercase tracking-widest mb-4">
                                         Orden {wompiData.orderNumber} — Paga ahora
