@@ -97,7 +97,30 @@ export default function AdminNosotrosPage() {
     loadConfig()
   }, [])
 
+  const LARGE_FILE_THRESHOLD = 4 * 1024 * 1024 // 4 MB — por encima se sube directo a Supabase
+
   const uploadFile = async (file: File, folder: string): Promise<string | null> => {
+    if (file.size > LARGE_FILE_THRESHOLD) {
+      // Subida directa a Supabase con URL firmada (sin límite de peso por Vercel)
+      const urlRes = await fetch('/api/admin/upload-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ folder, filename: file.name }),
+        credentials: 'include',
+      })
+      const urlData = await urlRes.json().catch(() => ({}))
+      if (!urlRes.ok || !urlData.path || !urlData.token || !urlData.publicUrl) {
+        setMessage({ type: 'error', text: urlData?.error || 'Error al obtener URL de subida' })
+        return null
+      }
+      const { error } = await (supabase as any).storage.from('product-images').uploadToSignedUrl(urlData.path, urlData.token, file, { contentType: file.type || undefined })
+      if (error) {
+        setMessage({ type: 'error', text: error.message || 'Error subiendo archivo' })
+        return null
+      }
+      return urlData.publicUrl
+    }
+
     const fd = new FormData()
     fd.append('file', file)
     fd.append('folder', folder)
@@ -122,7 +145,7 @@ export default function AdminNosotrosPage() {
   const saveStoreConfig = async (payload: Record<string, unknown>) => {
     const formData = new FormData()
     formData.append('config', JSON.stringify(payload))
-    const res = await fetch('/api/admin/store-config', { method: 'POST', body: formData })
+    const res = await fetch('/api/admin/store-config', { method: 'POST', body: formData, credentials: 'include' })
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
       throw new Error(data?.error || res.statusText)

@@ -35,31 +35,56 @@ export default function AdminBannersPage() {
       })
   }, [])
 
+  const LARGE_FILE = 4 * 1024 * 1024 // 4 MB — por encima se sube directo a Supabase
+
   const handleSave = async () => {
     setSaving(true)
     try {
+      let finalVideoUrl = videoUrl.trim() || null
+      if (videoFile) {
+        setUploadType('video')
+        setUploading(true)
+        if (videoFile.size > LARGE_FILE) {
+          const urlRes = await fetch('/api/admin/upload-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ folder: 'hero/videos', filename: videoFile.name }),
+            credentials: 'include',
+          })
+          const urlData = await urlRes.json().catch(() => ({}))
+          if (!urlRes.ok || !urlData.path || !urlData.token || !urlData.publicUrl) {
+            throw new Error(urlData?.error || 'Error al obtener URL de subida para el video')
+          }
+          const { error } = await supabase.storage.from('product-images').uploadToSignedUrl(urlData.path, urlData.token, videoFile, { contentType: videoFile.type || 'video/mp4' })
+          if (error) throw new Error(error.message)
+          finalVideoUrl = urlData.publicUrl
+        }
+        setUploading(false)
+        setUploadType(null)
+      }
+
       const formData = new FormData()
       formData.append('config', JSON.stringify({
         hero_image_url: imageUrl.trim() || null,
-        hero_video_url: videoUrl.trim() || null,
+        hero_video_url: finalVideoUrl,
       }))
       if (imageFile) {
         setUploadType('image')
         setUploading(true)
         formData.append('heroImage', imageFile)
       }
-      if (videoFile) {
+      if (videoFile && videoFile.size <= LARGE_FILE) {
         setUploadType('video')
         setUploading(true)
         formData.append('heroVideo', videoFile)
       }
-      const res = await fetch('/api/admin/store-config', { method: 'POST', body: formData })
+      const res = await fetch('/api/admin/store-config', { method: 'POST', body: formData, credentials: 'include' })
       const result = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(result?.error || res.statusText)
       setMessage({ type: 'success', text: '¡Hero actualizado! Los cambios ya se ven en la tienda.' })
       setImageFile(null)
       setVideoFile(null)
-      if (videoFile) setVideoUrl('')
+      if (videoFile) setVideoUrl(videoFile.size > LARGE_FILE ? (finalVideoUrl || '') : '')
     } catch (e: any) {
       setMessage({ type: 'error', text: e?.message || 'Error al subir.' })
     }
