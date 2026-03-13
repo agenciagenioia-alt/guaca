@@ -23,7 +23,7 @@ export function EditorialGrid({ products }: EditorialGridProps) {
 
   return (
     <div className="w-full max-w-[1400px] mx-auto px-6 lg:px-12 py-16 md:py-24 overflow-hidden">
-      <div className="flex flex-col md:flex-row items-end justify-between mb-8 md:mb-12 gap-6">
+      <div className="flex flex-col md:flex-row items-center md:items-end justify-center md:justify-between mb-8 md:mb-12 gap-6 text-center md:text-left">
         <div>
           <p className="font-mono text-[10px] md:text-xs tracking-widest text-foreground-subtle uppercase mb-4">
             Selección Exclusiva
@@ -32,7 +32,7 @@ export function EditorialGrid({ products }: EditorialGridProps) {
             Nuevos Drops
           </h2>
         </div>
-        <div className="flex flex-col md:items-end gap-6">
+        <div className="flex flex-col items-center md:items-end gap-6">
           <a href="/catalogo" className="font-mono text-xs text-foreground-muted hover:text-foreground transition-colors tracking-widest uppercase border-b border-border pb-1">
             Ver Colección Completa ↗
           </a>

@@ -14,11 +14,11 @@ interface StoreBannerProps {
 export function StoreBanner({ videoUrl }: StoreBannerProps) {
   return (
     <section
-      className="relative w-full h-[60vh] md:h-[85vh] overflow-hidden"
+      className={`relative w-full h-[60vh] md:h-[85vh] overflow-hidden ${videoUrl ? 'bg-[#0a0800]' : ''}`}
       aria-label="Visítanos en Montería"
     >
-      {/* Background: video or image */}
-      <div className="absolute inset-0 w-full h-full">
+      {/* Background: video or image — sin espacio arriba para evitar manchón blanco */}
+      <div className="absolute inset-0 w-full h-full min-h-full">
         {videoUrl ? (
           <video
             autoPlay

@@ -6,11 +6,33 @@ interface StickyScrollProps {
   videoUrl?: string | null
 }
 
+const ROTATE_INTERVAL_MS = 4000
+
 export function StickyScroll({ videoUrl }: StickyScrollProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [phase, setPhase] = useState(0) // 0, 1, or 2
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
+    const mql = window.matchMedia('(max-width: 767px)')
+    const onMatch = () => setIsMobile(mql.matches)
+    onMatch()
+    mql.addEventListener('change', onMatch)
+    return () => mql.removeEventListener('change', onMatch)
+  }, [])
+
+  // En mobile: rotación automática Cultura → Calidad → Exclusividad (sin scroll)
+  useEffect(() => {
+    if (!isMobile) return
+    const id = setInterval(() => {
+      setPhase((p) => (p + 1) % 3)
+    }, ROTATE_INTERVAL_MS)
+    return () => clearInterval(id)
+  }, [isMobile])
+
+  // En desktop: fase según scroll
+  useEffect(() => {
+    if (isMobile) return
     const handleScroll = () => {
       if (!containerRef.current) return
       
@@ -39,10 +61,10 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
     handleScroll()
     
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [isMobile])
 
   return (
-    <section ref={containerRef} className="relative w-full h-[280vh]">
+    <section ref={containerRef} className="relative w-full h-screen md:h-[280vh]">
       {/* The sticky container that locks into the viewport */}
       <div className="sticky top-0 w-full h-screen overflow-hidden flex flex-col items-center justify-end pb-[8vh]">
         
