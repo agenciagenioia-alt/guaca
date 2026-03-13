@@ -202,7 +202,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
 
   return (
     <div 
-      className={`fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-background overflow-hidden pointer-events-none transition-opacity duration-300 ${phase >= 5 ? 'bg-transparent' : ''}`}
+      className={`fixed inset-0 z-[10000] flex flex-col items-center justify-center bg-background overflow-hidden pointer-events-none transition-opacity duration-300 px-4 sm:px-6 md:px-0 ${phase >= 5 ? 'bg-transparent' : ''}`}
       ref={containerRef}
     >
       {/* GLITCH CANVAS */}
@@ -221,10 +221,10 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
         style={{ transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)' }}
       />
 
-      {/* FLASH TEXT ON SPLIT (Illusion of transfer) */}
+      {/* FLASH TEXT ON SPLIT (Illusion of transfer) — mobile: más pequeño para que no se corte */}
       {isSplit && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
-          <h1 className="font-heading font-bold text-[22vw] md:text-[18vw] leading-none text-foreground opacity-15 animate-pulse-fast">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50 px-4">
+          <h1 className="font-heading font-bold text-[12vw] sm:text-[16vw] md:text-[18vw] leading-none text-foreground opacity-15 animate-pulse-fast max-w-full overflow-hidden text-center">
             LA GUACA
           </h1>
         </div>
@@ -233,17 +233,16 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
       {/* MAIN CONTENT CONTAINER */}
       <div className={`relative z-10 flex flex-col items-center justify-center transition-opacity duration-150 ${isSplit ? 'opacity-0' : 'opacity-100'}`}>
         
-        {/* TEXT DECODE */}
-        <div className={`transition-transform duration-200 ${textScale}`}>
+        {/* TEXT DECODE — mobile: tamaño reducido para que "LA GUACA" no se corte */}
+        <div className={`transition-transform duration-200 w-full max-w-[100%] flex justify-center ${textScale}`}>
           {phase >= 2 && (
-             <h1 className="font-heading font-bold text-[22vw] md:text-[18vw] leading-none tracking-tight flex items-center justify-center h-[24vw] md:h-[20vw]">
+             <h1 className="font-heading font-bold text-[11vw] sm:text-[14vw] md:text-[18vw] leading-none tracking-tight flex items-center justify-center h-[14vw] sm:h-[18vw] md:h-[20vw] shrink-0">
                {decodeText.split('').map((char, i) => {
                  const isFinal = isTargetText || (char === "LA GUACA"[i] && phase >= 2)
-                 // Flash gold briefly when finalizing, then white. Scrambling is gold.
                  return (
                    <span 
                      key={i} 
-                     className={`${isFinal ? 'text-[#E8E6E1]' : 'text-[#E8E6E1]'} ${char === ' ' ? 'w-[4vw]' : ''}`}
+                     className={`${isFinal ? 'text-[#E8E6E1]' : 'text-[#E8E6E1]'} ${char === ' ' ? 'w-[2.5vw] sm:w-[3vw] md:w-[4vw]' : ''}`}
                      style={{ textShadow: isFinal && phase === 2 ? '0 0 10px #E8E6E1' : 'none', transition: 'text-shadow 0.1s ease-out' }}
                    >
                      {char}

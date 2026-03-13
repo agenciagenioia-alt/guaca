@@ -46,7 +46,7 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
       {/* The sticky container that locks into the viewport */}
       <div className="sticky top-0 w-full h-screen overflow-hidden flex flex-col items-center justify-end pb-[8vh]">
         
-        {/* Video background or fallback */}
+        {/* Video background or fallback — mobile: object-center para encuadre centrado */}
         {videoUrl ? (
           <div className="absolute inset-0 w-full h-full">
             <video
@@ -54,7 +54,7 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover object-center"
             >
               <source src={videoUrl} type="video/mp4" />
             </video>
@@ -95,45 +95,45 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
           </>
         )}
 
-        {/* Text Content Container (Fixed center) - SAME AS BEFORE */}
-        <div className="relative z-10 text-center px-6 w-full max-w-4xl mx-auto flex flex-col items-center justify-center">
+        {/* Text Content Container — mobile: más padding para que no se corten Cultura/Calidad/Exclusividad */}
+        <div className="relative z-10 text-center px-4 sm:px-6 w-full max-w-4xl mx-auto flex flex-col items-center justify-center">
            
-           <div className="relative w-full h-[160px] md:h-[220px] flex items-center justify-center">
+           <div className="relative w-full min-h-[140px] h-[160px] sm:h-[180px] md:h-[220px] flex items-center justify-center">
              
              {/* Text 1: Cultura */}
-             <div className={`absolute transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
+             <div className={`absolute transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] w-full max-w-[100%] px-2 ${
                phase === 0 ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 -translate-y-8'
              }`}>
-                <h3 className={`font-heading text-6xl md:text-8xl lg:text-[120px] tracking-widest leading-[0.85] uppercase mb-4 ${videoUrl ? 'text-[#E8E6E1]' : 'text-foreground'}`}>
+                <h3 className={`font-heading text-4xl sm:text-5xl md:text-8xl lg:text-[120px] tracking-widest leading-[0.85] uppercase mb-2 sm:mb-4 break-words ${videoUrl ? 'text-[#E8E6E1]' : 'text-foreground'}`}>
                   Cultura
                 </h3>
-                <p className={`font-mono text-xs md:text-sm tracking-widest mt-4 uppercase max-w-md mx-auto ${videoUrl ? 'text-[#E8E6E1]/60' : 'text-foreground-muted'}`}>
+                <p className={`font-mono text-[10px] sm:text-xs md:text-sm tracking-widest mt-2 sm:mt-4 uppercase max-w-md mx-auto px-1 ${videoUrl ? 'text-[#E8E6E1]/60' : 'text-foreground-muted'}`}>
                   No vendemos ropa. Entregamos las herramientas para que construyas tu propia identidad.
                 </p>
              </div>
 
              {/* Text 2: Calidad */}
-             <div className={`absolute transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
+             <div className={`absolute transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] w-full max-w-[100%] px-2 ${
                phase === 1 ? 'opacity-100 scale-100 translate-y-0' : 
                phase < 1 ? 'opacity-0 scale-105 translate-y-8' : 'opacity-0 scale-95 -translate-y-8'
              }`}>
-                <h3 className="font-heading text-6xl md:text-8xl lg:text-[120px] tracking-widest leading-[0.85] uppercase mb-4 text-transparent"
+                <h3 className="font-heading text-4xl sm:text-5xl md:text-8xl lg:text-[120px] tracking-widest leading-[0.85] uppercase mb-2 sm:mb-4 text-transparent break-words"
                     style={{ WebkitTextStroke: `2px ${videoUrl ? '#E8E6E1' : 'var(--color-foreground)'}` }}>
                   Calidad
                 </h3>
-                <p className={`font-mono text-xs md:text-sm tracking-widest mt-4 uppercase max-w-md mx-auto ${videoUrl ? 'text-[#E8E6E1]/60' : 'text-foreground-muted'}`}>
+                <p className={`font-mono text-[10px] sm:text-xs md:text-sm tracking-widest mt-2 sm:mt-4 uppercase max-w-md mx-auto px-1 ${videoUrl ? 'text-[#E8E6E1]/60' : 'text-foreground-muted'}`}>
                   Seleccionamos piezas premium de marcas que dictan las reglas en el streetwear global.
                 </p>
              </div>
 
              {/* Text 3: Exclusividad */}
-             <div className={`absolute transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
+             <div className={`absolute transition-all duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] w-full max-w-[100%] px-2 ${
                phase === 2 ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-105 translate-y-8'
              }`}>
-                <h3 className={`font-heading text-6xl md:text-8xl lg:text-[120px] tracking-widest leading-[0.85] uppercase mb-4 ${videoUrl ? 'text-[#E8E6E1]' : 'text-foreground'}`}>
+                <h3 className={`font-heading text-4xl sm:text-5xl md:text-8xl lg:text-[120px] tracking-widest leading-[0.85] uppercase mb-2 sm:mb-4 break-words ${videoUrl ? 'text-[#E8E6E1]' : 'text-foreground'}`}>
                   Exclusividad
                 </h3>
-                <p className={`font-mono text-xs md:text-sm tracking-widest mt-4 uppercase max-w-md mx-auto ${videoUrl ? 'text-[#E8E6E1]/60' : 'text-foreground-muted'}`}>
+                <p className={`font-mono text-[10px] sm:text-xs md:text-sm tracking-widest mt-2 sm:mt-4 uppercase max-w-md mx-auto px-1 ${videoUrl ? 'text-[#E8E6E1]/60' : 'text-foreground-muted'}`}>
                   Cantidades limitadas. Cuando un drop se va, se fue para siempre. Esto es La Guaca.
                 </p>
              </div>

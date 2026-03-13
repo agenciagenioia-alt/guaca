@@ -25,7 +25,7 @@ export function StoreBanner({ videoUrl }: StoreBannerProps) {
             loop
             muted
             playsInline
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover object-center"
           >
             <source src={videoUrl} type="video/mp4" />
           </video>

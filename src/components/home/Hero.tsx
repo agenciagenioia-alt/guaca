@@ -157,9 +157,9 @@ export function Hero({ heroImageUrl, heroVideoUrl }: HeroProps) {
   }, [])
 
   return (
-    <section className="relative w-full h-screen min-h-[600px] flex items-center justify-start bg-transparent overflow-hidden">
+    <section className="relative w-full min-h-[100dvh] min-h-[600px] flex items-center justify-start bg-transparent overflow-hidden">
 
-      {/* Asymmetrical Image/Video Background / Right Side */}
+      {/* Asymmetrical Image/Video Background / Right Side — mobile: object-center para que no se vea cortado */}
       <div className="absolute right-0 top-0 w-full md:w-[45%] h-full z-0 pointer-events-none overflow-hidden opacity-30 md:opacity-100">
         {/* Gradients to blend cleanly with background */}
         <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent z-10 hidden md:block" />
@@ -172,7 +172,7 @@ export function Hero({ heroImageUrl, heroVideoUrl }: HeroProps) {
             loop
             playsInline
             preload="auto"
-            className="absolute inset-0 w-full h-full object-cover select-none"
+            className="absolute inset-0 w-full h-full object-cover object-center select-none"
           />
         ) : (
           <Image
@@ -192,19 +192,19 @@ export function Hero({ heroImageUrl, heroVideoUrl }: HeroProps) {
         aria-hidden="true"
       />
 
-      {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-start justify-center w-full max-w-[1400px] mx-auto px-6 lg:px-12 pointer-events-none md:w-[60%]">
+      {/* Main Content — mobile: más padding y tipografía que quepa sin cortarse */}
+      <div className="relative z-10 flex flex-col items-start justify-center w-full max-w-[1400px] mx-auto px-5 sm:px-6 lg:px-12 pointer-events-none md:w-[60%]">
 
-        {/* Typographic Lockup */}
-        <div className="flex flex-col relative w-full pointer-events-auto z-20">
+        {/* Typographic Lockup — mobile: tamaño reducido para que LA + GUACA no se corten */}
+        <div className="flex flex-col relative w-full max-w-[100%] overflow-hidden pointer-events-auto z-20">
           {/* LÍNEA 1: "LA" */}
-          <h1 className="font-heading font-bold text-[22vw] md:text-[17vw] leading-[0.85] tracking-[-0.02em] text-foreground select-none drop-shadow-2xl md:drop-shadow-none">
+          <h1 className="font-heading font-bold text-[16vw] sm:text-[19vw] md:text-[17vw] leading-[0.85] tracking-[-0.02em] text-foreground select-none drop-shadow-2xl md:drop-shadow-none">
             LA
           </h1>
 
           {/* LÍNEA 2: "GUACA" (Outline, hover fill) */}
           <h1
-            className="font-heading font-bold text-[22vw] md:text-[17vw] leading-[0.85] tracking-[-0.02em] select-none text-transparent transition-colors duration-500 hover:text-foreground md:indent-[5vw] drop-shadow-2xl md:drop-shadow-none cursor-default"
+            className="font-heading font-bold text-[16vw] sm:text-[19vw] md:text-[17vw] leading-[0.85] tracking-[-0.02em] select-none text-transparent transition-colors duration-500 hover:text-foreground md:indent-[5vw] drop-shadow-2xl md:drop-shadow-none cursor-default"
             style={{ WebkitTextStroke: '1.5px var(--color-foreground-muted)' }}
             aria-label="GUACA"
           >

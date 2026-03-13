@@ -203,8 +203,8 @@ function CatalogoContent() {
 
             <div className="w-full flex flex-col md:flex-row relative">
                 {/* Mobile Fast Horizontal Filters (App-Like) */}
-                <div className="w-full md:hidden border-b border-border bg-background/95 backdrop-blur-[10px] sticky top-[60px] z-30">
-                    <div className="flex overflow-x-auto snap-x scrollbar-hide px-4 py-3 gap-2">
+                <div className="w-full md:hidden border-b border-border bg-background/95 backdrop-blur-[10px] sticky top-[60px] z-30 overflow-hidden">
+                    <div className="flex overflow-x-auto overflow-y-hidden snap-x scrollbar-hide px-4 py-3 gap-2 -webkit-overflow-scrolling-touch">
                         <button
                             onClick={() => updateFilter('categoria', '')}
                             className={`shrink-0 snap-start px-5 py-2 text-[11px] font-mono tracking-widest uppercase rounded-full transition-all duration-300 ${!selectedCategory
@@ -228,7 +228,7 @@ function CatalogoContent() {
                         ))}
                     </div>
                     {/* Tallas Mini Pills Mobile */}
-                    <div className="flex overflow-x-auto snap-x scrollbar-hide px-4 pb-3 pt-1 gap-2">
+                    <div className="flex overflow-x-auto overflow-y-hidden snap-x scrollbar-hide px-4 pb-3 pt-1 gap-2 -webkit-overflow-scrolling-touch">
                         <span className="shrink-0 flex items-center pr-2 text-[10px] font-mono uppercase text-foreground-subtle">Tallas:</span>
                         {(sizesExpanded ? SIZES : SIZES.slice(0, SIZES_INITIAL_COUNT)).map((size) => (
                             <button
@@ -254,7 +254,7 @@ function CatalogoContent() {
                     </div>
                     {/* Marcas Mini Pills Mobile */}
                     {brands.length > 0 && (
-                        <div className="flex overflow-x-auto snap-x scrollbar-hide px-4 pb-3 pt-1 gap-2">
+                        <div className="flex overflow-x-auto overflow-y-hidden snap-x scrollbar-hide px-4 pb-3 pt-1 gap-2 -webkit-overflow-scrolling-touch">
                             <span className="shrink-0 flex items-center pr-2 text-[10px] font-mono uppercase text-foreground-subtle">Marcas:</span>
                             {brands.map((brand) => (
                                 <button
@@ -404,10 +404,10 @@ function CatalogoContent() {
                         )}
                     </aside>
 
-                    {/* Grid de productos */}
-                    <div className="flex-1 bg-background">
+                    {/* Grid de productos — mobile: padding lateral para que no se vean cortadas las cards */}
+                    <div className="flex-1 bg-background overflow-hidden">
                         {loading ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[1px] bg-border/20">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[1px] bg-border/20 min-w-0">
                                 {Array.from({ length: 8 }).map((_, i) => (
                                     <div key={i} className="aspect-[3/4] w-full relative overflow-hidden bg-background">
                                         <style jsx>{`
@@ -458,7 +458,7 @@ function CatalogoContent() {
                                         {products.length} producto{products.length !== 1 ? 's' : ''} en vista
                                     </p>
                                 </div>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[1px] bg-border/20">
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[1px] sm:gap-px bg-border/20 min-w-0">
                                     {products.map((product, index) => (
                                         <ProductCard key={product.id} product={product} index={index} />
                                     ))}
