@@ -66,7 +66,7 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
   // Layout especial mobile cuando hay video: video minimizado (sin marca Veo) y zonas rellenadas
   if (isMobile && videoUrl) {
     return (
-      <section className="relative w-full h-screen bg-[#0a0a0a] overflow-hidden flex flex-col items-center justify-center">
+      <section className="relative w-full min-h-screen bg-[#0a0a0a] overflow-hidden flex flex-col">
         {/* Fondo de las zonas “negras”: gradiente + líneas diagonales sutiles */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a] via-[#111] to-[#0a0a0a]" />
         <div
@@ -76,8 +76,8 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
           }}
         />
 
-        {/* Video minimizado: recuadro centrado para ocultar marca de agua y verse más completo */}
-        <div className="relative w-[96%] max-w-[440px] aspect-[9/16] rounded-lg overflow-hidden shadow-2xl ring-1 ring-white/10 flex-shrink-0">
+        {/* Video al formato de la sección: ancho completo, 16/9 para mobile */}
+        <div className="relative w-full aspect-[16/9] flex-shrink-0 overflow-hidden">
           <video
             autoPlay
             loop
@@ -88,12 +88,11 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
           >
             <source src={videoUrl} type="video/mp4" />
           </video>
-          <div className="absolute inset-0 pointer-events-none rounded-lg ring-inset ring-black/20" />
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/20 to-transparent" />
         </div>
 
-        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-[#0a0a0a]/95 via-transparent to-[#0a0a0a]/80" />
-
-        <div className="absolute inset-x-0 bottom-8 px-6 text-center z-10">
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-[#0a0a0a] via-transparent pt-[56.25%]" />
+        <div className="relative flex-1 flex flex-col justify-end min-h-0 pb-10 pt-6 px-6 text-center z-10">
           <div className="mb-4">
             {phase === 0 && (
               <>
