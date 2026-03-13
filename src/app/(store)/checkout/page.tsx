@@ -66,6 +66,20 @@ export default function CheckoutPage() {
         }
     }, [safeItems.length, router])
 
+    // Persistir datos básicos de envío en localStorage en cada cambio (siempre mismo número de hooks)
+    useEffect(() => {
+        if (!mounted) return
+        if (typeof window === 'undefined') return
+        const payload = {
+            name: formData.name,
+            phone: formData.phone,
+            email: formData.email,
+            address: formData.address,
+            city: formData.city,
+        }
+        window.localStorage.setItem('laguaca-checkout-info', JSON.stringify(payload))
+    }, [mounted, formData.name, formData.phone, formData.email, formData.address, formData.city])
+
     if (!mounted || safeItems.length === 0) return null
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,20 +93,6 @@ export default function CheckoutPage() {
         setFormData(prev => ({ ...prev, [id]: value }))
         if (errors[id]) setErrors(prev => ({ ...prev, [id]: '' }))
     }
-
-    // Persistir datos básicos de envío en localStorage en cada cambio
-    useEffect(() => {
-        if (!mounted) return
-        if (typeof window === 'undefined') return
-        const payload = {
-            name: formData.name,
-            phone: formData.phone,
-            email: formData.email,
-            address: formData.address,
-            city: formData.city,
-        }
-        window.localStorage.setItem('laguaca-checkout-info', JSON.stringify(payload))
-    }, [mounted, formData.name, formData.phone, formData.email, formData.address, formData.city])
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {}
@@ -362,24 +362,35 @@ export default function CheckoutPage() {
                         </h3>
 
                         <ul className="flex flex-col gap-4 mb-8">
-                            {safeItems.map(item => (
-                                <li key={`${item.productId}-${item.size}`} className="flex gap-4 items-center">
-                                    <div className="relative w-16 h-20 bg-background border border-border rounded-none shrink-0 border-l">
-                                        <Image src={item.imageUrl} alt={item.productName} fill className="object-cover" sizes="64px" />
-                                        {/* Drop contador flotante estilo shopify */}
+                            {safeItems.map((item, idx) => {
+                                const qty = Number(item?.quantity) || 1
+                                const price = Number(item?.unitPrice) || 0
+                                const name = String(item?.productName ?? 'Producto')
+                                const size = String(item?.size ?? '')
+                                const pid = String(item?.productId ?? idx)
+                                const imgUrl = item?.imageUrl
+                                return (
+                                <li key={`${pid}-${size}`} className="flex gap-4 items-center">
+                                    <div className="relative w-16 h-20 bg-background border border-border rounded-none shrink-0 border-l overflow-hidden">
+                                        {imgUrl && typeof imgUrl === 'string' && imgUrl.startsWith('http') ? (
+                                            <Image src={imgUrl} alt={name} fill className="object-cover" sizes="64px" unoptimized />
+                                        ) : (
+                                            <div className="absolute inset-0 bg-border flex items-center justify-center text-[10px] text-foreground-muted">IMG</div>
+                                        )}
                                         <span className="absolute -top-2 -right-2 bg-foreground text-background w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold">
-                                            {item.quantity}
+                                            {qty}
                                         </span>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-foreground text-[14px] font-bold line-clamp-1">{item.productName}</p>
-                                        <p className="text-[12px] text-foreground-muted mt-1 font-mono uppercase">{item.size}</p>
+                                        <p className="text-foreground text-[14px] font-bold line-clamp-1">{name}</p>
+                                        <p className="text-[12px] text-foreground-muted mt-1 font-mono uppercase">{size}</p>
                                     </div>
                                     <p className="text-foreground font-mono font-bold text-[14px] shrink-0">
-                                        {formatCOP(item.unitPrice * item.quantity)}
+                                        {formatCOP(price * qty)}
                                     </p>
                                 </li>
-                            ))}
+                                )
+                            })}
                         </ul>
 
                         <div className="flex flex-col gap-4 border-t border-border pt-6">

@@ -2,8 +2,10 @@
  * Formatea un número como precio en COP (pesos colombianos)
  * Ejemplo: 85000 → "$85.000"
  */
-export function formatCOP(amount: number): string {
-    return '$' + amount.toLocaleString('es-CO', {
+export function formatCOP(amount: number | undefined | null): string {
+    const n = Number(amount)
+    if (!Number.isFinite(n)) return '$0'
+    return '$' + n.toLocaleString('es-CO', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
     })
