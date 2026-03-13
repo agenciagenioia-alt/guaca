@@ -9,7 +9,6 @@ import { createClient } from '@/lib/supabase/client'
 import { Loader2, Plus, Trash2, ArrowLeft, Upload } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { revalidateStore } from '@/app/admin/actions'
 import { CameraOrGalleryInput } from '@/components/admin/CameraOrGalleryInput'
 
 const SIZES_ROPA = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'ÚNICO']
@@ -164,64 +163,42 @@ export default function EditarProductoPage() {
   }
 
   const removeExistingImage = async (imageId: string) => {
-    const supabase = createClient()
-    await supabase.from('product_images').delete().eq('id', imageId)
+    const res = await fetch(`/api/admin/imagenes/${imageId}`, { method: 'DELETE' })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      alert(data?.error || 'No se pudo eliminar la imagen')
+      return
+    }
     setExistingImages((prev) => prev.filter((img) => img.id !== imageId))
   }
 
   const onSubmit = async (data: ProductForm) => {
     if (!id) return
     setSubmitting(true)
-    const supabase = createClient()
     try {
-      // No enviar brand_id: la columna puede no existir en el proyecto (schema cache)
-      const { error: updateError } = await (supabase as any)
-        .from('products')
-        .update({
-          name: data.name,
-          description: data.description || null,
-          materials_care: data.materials_care?.trim() || null,
-          price: data.price,
-          original_price: data.original_price || null,
-          category_id: data.category_id,
-          is_active: data.is_active,
-          is_featured: data.is_featured,
-          low_stock_alert: data.low_stock_alert,
-        })
-        .eq('id', id)
-
-      if (updateError) throw updateError
-
-      await supabase.from('product_variants').delete().eq('product_id', id)
-      const variantsToInsert = data.variants.map((v, index) => ({
-        product_id: id,
-        size: v.size,
-        stock: v.stock,
-        display_order: index,
+      const formData = new FormData()
+      formData.append('product', JSON.stringify({
+        name: data.name,
+        description: data.description || null,
+        materials_care: data.materials_care?.trim() || null,
+        price: data.price,
+        original_price: data.original_price || null,
+        category_id: data.category_id,
+        is_active: data.is_active,
+        is_featured: data.is_featured,
+        low_stock_alert: data.low_stock_alert,
       }))
-      const { error: variantError } = await supabase.from('product_variants').insert(variantsToInsert as any)
-      if (variantError) throw variantError
+      formData.append('variants', JSON.stringify(data.variants.map((v) => ({ size: v.size, stock: v.stock }))))
+      formData.append('existingImagesCount', String(existingImages.length))
+      newImages.forEach((file) => formData.append('images', file))
 
-      if (newImages.length > 0) {
-        const existingCount = existingImages.length
-        for (let i = 0; i < newImages.length; i++) {
-          const file = newImages[i]
-          const ext = file.name.split('.').pop() || 'jpg'
-          const fileName = `${id}/${Date.now()}-${i}.${ext}`
-          const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, file)
-          if (uploadError) throw uploadError
-          const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(fileName)
-          await supabase.from('product_images').insert({
-            product_id: id,
-            image_url: urlData.publicUrl,
-            is_primary: existingCount === 0 && i === 0,
-            display_order: existingCount + i,
-          } as any)
-        }
-      }
+      const res = await fetch(`/api/admin/productos/${id}/guardar`, {
+        method: 'POST',
+        body: formData,
+      })
+      const result = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(result?.error || res.statusText)
 
-      const { data: updated } = await supabase.from('products').select('slug').eq('id', id).single()
-      await revalidateStore('product', (updated as any)?.slug)
       router.push('/admin/productos')
       router.refresh()
     } catch (error: any) {

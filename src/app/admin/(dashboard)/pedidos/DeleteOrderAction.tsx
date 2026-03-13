@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import { useToastStore } from '@/store/toast'
 
 interface Props {
@@ -40,36 +39,14 @@ export function DeleteOrderAction({ orderId, orderNumber }: Props) {
 
     const confirmDelete = async () => {
         setIsDeleting(true)
-        const supabase = createClient()
-
         try {
-            // 1. Primero borrar order_items (si no hay CASCADE)
-            const { error: itemsError } = await supabase
-                .from('order_items')
-                .delete()
-                .eq('order_id', orderId)
-
-            if (itemsError) throw itemsError
-
-            // 2. Luego borrar el pedido, exigiendo el retorno (.select()) 
-            //    para saber si RLS silenciosamente lo bloqueó
-            const { data, error: orderError } = await supabase
-                .from('orders')
-                .delete()
-                .eq('id', orderId)
-                .select()
-
-            if (orderError) throw orderError
-
-            // Si la DB devuelve un array vacío, significa que RLS impidió el DELETE
-            if (!data || data.length === 0) {
-                throw new Error("Supabase rechazó el borrado (Revisa si olvidaste crear la política FOR DELETE en Supabase)")
+            const res = await fetch(`/api/admin/orders/${orderId}`, { method: 'DELETE' })
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}))
+                throw new Error(data?.error || 'Error al eliminar')
             }
-
             addToast('Pedido eliminado correctamente', 'success')
             setIsOpen(false)
-
-            // Animate removal from DOM
             const tr = document.getElementById(`order-row-${orderId}`)
             if (tr) {
                 tr.style.transition = 'opacity 300ms ease'
@@ -82,9 +59,9 @@ export function DeleteOrderAction({ orderId, orderNumber }: Props) {
                 router.refresh()
             }
         } catch (error) {
-            // 5. Si falla: NO borrar del estado local
             console.error('Error eliminando pedido:', error)
-            addToast('No se pudo eliminar. Intenta de nuevo.', 'error')
+            addToast(error instanceof Error ? error.message : 'No se pudo eliminar. Intenta de nuevo.', 'error')
+        } finally {
             setIsDeleting(false)
             setIsOpen(false)
         }

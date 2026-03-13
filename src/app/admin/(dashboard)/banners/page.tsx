@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { revalidateStore } from '@/app/admin/actions'
 import { Save, Loader2, Image as ImageIcon, Video, X } from 'lucide-react'
 import Image from 'next/image'
 import { CameraOrGalleryInput } from '@/components/admin/CameraOrGalleryInput'
@@ -38,55 +37,34 @@ export default function AdminBannersPage() {
 
   const handleSave = async () => {
     setSaving(true)
-    let finalImageUrl = imageUrl.trim() || null
-    let finalVideoUrl = videoUrl.trim() || null
     try {
+      const formData = new FormData()
+      formData.append('config', JSON.stringify({
+        hero_image_url: imageUrl.trim() || null,
+        hero_video_url: videoUrl.trim() || null,
+      }))
       if (imageFile) {
-        setUploading(true)
         setUploadType('image')
-        const ext = imageFile.name.split('.').pop() || 'jpg'
-        const path = `hero/${Date.now()}.${ext}`
-        const { error: uploadError } = await supabase.storage.from('product-images').upload(path, imageFile, { upsert: true })
-        setUploading(false)
-        setUploadType(null)
-        if (uploadError) throw uploadError
-        const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(path)
-        finalImageUrl = urlData.publicUrl
+        setUploading(true)
+        formData.append('heroImage', imageFile)
       }
       if (videoFile) {
-        setUploading(true)
         setUploadType('video')
-        const ext = videoFile.name.split('.').pop() || 'mp4'
-        const path = `hero/videos/${Date.now()}.${ext}`
-        const { error: uploadError } = await supabase.storage.from('product-images').upload(path, videoFile, { upsert: true })
-        setUploading(false)
-        setUploadType(null)
-        if (uploadError) throw uploadError
-        const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(path)
-        finalVideoUrl = urlData.publicUrl
+        setUploading(true)
+        formData.append('heroVideo', videoFile)
       }
-      const { error } = await supabase
-        .from('store_config')
-        .update({
-          hero_image_url: finalImageUrl,
-          hero_video_url: finalVideoUrl,
-        })
-        .eq('id', 1)
-
-      if (error) {
-        setMessage({ type: 'error', text: 'Error al guardar. Verifica los permisos de admin.' })
-      } else {
-        await revalidateStore('config')
-        setMessage({ type: 'success', text: '¡Hero actualizado! Los cambios ya se ven en la tienda.' })
-        setImageFile(null)
-        setVideoFile(null)
-        if (finalVideoUrl) setVideoUrl(finalVideoUrl)
-      }
+      const res = await fetch('/api/admin/store-config', { method: 'POST', body: formData })
+      const result = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(result?.error || res.statusText)
+      setMessage({ type: 'success', text: '¡Hero actualizado! Los cambios ya se ven en la tienda.' })
+      setImageFile(null)
+      setVideoFile(null)
+      if (videoFile) setVideoUrl('')
     } catch (e: any) {
-      setUploading(false)
-      setUploadType(null)
       setMessage({ type: 'error', text: e?.message || 'Error al subir.' })
     }
+    setUploading(false)
+    setUploadType(null)
     setSaving(false)
     setTimeout(() => setMessage(null), 5000)
   }

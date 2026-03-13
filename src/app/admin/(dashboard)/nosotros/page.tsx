@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { revalidateStore } from '@/app/admin/actions'
 import { Loader2, Save, ImageIcon, Video, Upload, X } from 'lucide-react'
 import NextImage from 'next/image'
 import { CameraOrGalleryInput } from '@/components/admin/CameraOrGalleryInput'
@@ -99,24 +98,26 @@ export default function AdminNosotrosPage() {
   }, [])
 
   const uploadFile = async (file: File, folder: string): Promise<string | null> => {
-    const ext = file.name.split('.').pop()
-    const fileName = `${folder}/${Date.now()}.${ext}`
-    
-    const { error: uploadError } = await (supabase as any).storage
-      .from('product-images')
-      .upload(fileName, file, { upsert: true })
-
-    if (uploadError) {
-      console.error('Upload error:', uploadError)
-      setMessage({ type: 'error', text: `Error subiendo archivo: ${uploadError.message}` })
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('folder', folder)
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      setMessage({ type: 'error', text: data?.error || 'Error subiendo archivo' })
       return null
     }
+    return data?.url || null
+  }
 
-    const { data: urlData } = (supabase as any).storage
-      .from('product-images')
-      .getPublicUrl(fileName)
-
-    return urlData?.publicUrl || null
+  const saveStoreConfig = async (payload: Record<string, unknown>) => {
+    const formData = new FormData()
+    formData.append('config', JSON.stringify(payload))
+    const res = await fetch('/api/admin/store-config', { method: 'POST', body: formData })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data?.error || res.statusText)
+    }
   }
 
   const handleFileUpload = async (
@@ -130,20 +131,13 @@ export default function AdminNosotrosPage() {
     setUploading(field)
     const url = await uploadFile(file, folder)
     if (url) {
-      setForm(prev => ({ ...prev, [field]: url }))
-      
-      // Auto-save to DB immediately
-      const { error } = await (supabase as any)
-        .from('store_config')
-        .update({ [field]: url })
-        .eq('id', 1)
-
-      if (error) {
-        console.error('Auto-save error:', error)
-        setMessage({ type: 'error', text: `Archivo subido pero error al guardar: ${error.message}` })
-      } else {
-        await revalidateStore('config')
+      const next = { ...form, [field]: url }
+      setForm(next)
+      try {
+        await saveStoreConfig(next)
         setMessage({ type: 'success', text: '¡Archivo subido y guardado!' })
+      } catch (e: any) {
+        setMessage({ type: 'error', text: e?.message || 'Error al guardar' })
       }
     }
     setUploading(null)
@@ -160,13 +154,13 @@ export default function AdminNosotrosPage() {
     setUploadingIgSlot(slot)
     const url = await uploadFile(file, 'nosotros-ig')
     if (url) {
-      setForm(prev => ({ ...prev, [field]: url }))
-      const { error } = await (supabase as any).from('store_config').update({ [field]: url }).eq('id', 1)
-      if (error) {
-        setMessage({ type: 'error', text: 'Imagen subida pero no se pudo guardar en la base de datos. Ejecuta en Supabase la migración: ALTER TABLE store_config ADD COLUMN IF NOT EXISTS nosotros_ig_1_url TEXT; (y nosotros_ig_2_url ... 6_url).' })
-      } else {
-        try { await revalidateStore('config') } catch (_) {}
+      const next = { ...form, [field]: url }
+      setForm(next)
+      try {
+        await saveStoreConfig(next)
         setMessage({ type: 'success', text: `Imagen ${slot} subida y guardada.` })
+      } catch (e: any) {
+        setMessage({ type: 'error', text: e?.message || 'Error al guardar. Si faltan columnas nosotros_ig_* en store_config, ejecuta la migración en Supabase.' })
       }
     }
     setUploadingIgSlot(null)
@@ -175,21 +169,20 @@ export default function AdminNosotrosPage() {
   }
 
   const clearField = async (field: keyof NosotrosConfig) => {
-    setForm(prev => ({ ...prev, [field]: '' }))
-    const { error } = await (supabase as any)
-      .from('store_config')
-      .update({ [field]: null })
-      .eq('id', 1)
-    if (!error) await revalidateStore('config')
-    setMessage({ type: 'success', text: '¡Campo eliminado!' })
+    const next = { ...form, [field]: '' }
+    setForm(next)
+    try {
+      await saveStoreConfig(next)
+      setMessage({ type: 'success', text: '¡Campo eliminado!' })
+    } catch (_) {
+      setMessage({ type: 'error', text: 'Error al guardar' })
+    }
     setTimeout(() => setMessage(null), 3000)
   }
 
   const handleSave = async () => {
     setSaving(true)
     setMessage(null)
-    // Solo guardamos los campos que siempre existen en store_config (videos, imagen, textos).
-    // Las 6 imágenes de Instagram se guardan solas al subir cada una.
     const payload = {
       nosotros_image_url: form.nosotros_image_url.trim() || null,
       nosotros_title: form.nosotros_title.trim() || null,
@@ -199,15 +192,11 @@ export default function AdminNosotrosPage() {
       sticky_video_url: form.sticky_video_url.trim() || null,
       store_banner_video_url: form.store_banner_video_url.trim() || null,
     }
-    const { error } = await (supabase as any).from('store_config').update(payload).eq('id', 1)
-
-    if (error) {
-      const msg = error?.message ?? error?.error_description ?? JSON.stringify(error)
-      console.error('Save error:', error)
-      setMessage({ type: 'error', text: `Error al guardar: ${msg}` })
-    } else {
-      try { await revalidateStore('config') } catch (_) {}
+    try {
+      await saveStoreConfig(payload)
       setMessage({ type: 'success', text: '¡Sección Nosotros actualizada!' })
+    } catch (e: any) {
+      setMessage({ type: 'error', text: e?.message || 'Error al guardar' })
     }
     setSaving(false)
     setTimeout(() => setMessage(null), 3000)

@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Plus, Trash2, Edit, X, Loader2, Eye, EyeOff, Navigation } from 'lucide-react'
 import Image from 'next/image'
-import { revalidateStore } from '@/app/admin/actions'
 import { CameraOrGalleryInput } from '@/components/admin/CameraOrGalleryInput'
 
 interface Category {
@@ -85,32 +84,24 @@ export default function AdminCategoriasPage() {
   const handleSave = async () => {
     if (!formName.trim()) return
     setSaving(true)
-
     const slug = formSlug.trim() || generateSlug(formName)
     let imageUrl = formImage.trim() || null
-
     try {
       if (formImageFile) {
         setUploading(true)
-        const fileExt = formImageFile.name.split('.').pop() || 'jpg'
-        const categoryId = editingId || crypto.randomUUID()
-        const fileName = `categories/${categoryId}/${Date.now()}.${fileExt}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(fileName, formImageFile, { upsert: true })
-
+        const fd = new FormData()
+        fd.append('file', formImageFile)
+        fd.append('folder', 'categories')
+        const up = await fetch('/api/admin/upload', { method: 'POST', body: fd })
         setUploading(false)
-        if (uploadError) {
-          setMessage({ type: 'error', text: 'Error al subir la imagen. Intenta de nuevo.' })
+        const upData = await up.json().catch(() => ({}))
+        if (!up.ok) {
+          setMessage({ type: 'error', text: upData?.error || 'Error al subir imagen' })
           setSaving(false)
           return
         }
-
-        const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(fileName)
-        imageUrl = urlData.publicUrl
+        imageUrl = upData?.url || imageUrl
       }
-
       const payload = {
         name: formName.trim(),
         slug,
@@ -119,29 +110,26 @@ export default function AdminCategoriasPage() {
         is_active: formActive,
         show_in_navbar: formNavbar,
       }
-
-      if (editingId) {
-        const { error } = await supabase.from('categories').update(payload).eq('id', editingId)
-        if (error) {
-          setMessage({ type: 'error', text: 'Error al actualizar categoría.' })
-        } else {
-          setMessage({ type: 'success', text: '¡Categoría actualizada!' })
-          await revalidateStore('category')
-        }
+      const res = await fetch('/api/admin/mutate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          table: 'categories',
+          operation: editingId ? 'update' : 'insert',
+          payload,
+          ...(editingId && { id: editingId }),
+        }),
+      })
+      const result = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setMessage({ type: 'error', text: result?.error || (editingId ? 'Error al actualizar categoría.' : 'Error al crear categoría. Verifica que el slug no esté duplicado.') })
       } else {
-        const { error } = await supabase.from('categories').insert(payload)
-        if (error) {
-          setMessage({ type: 'error', text: 'Error al crear categoría. Verifica que el slug no esté duplicado.' })
-        } else {
-          setMessage({ type: 'success', text: '¡Categoría creada!' })
-          await revalidateStore('category')
-        }
+        setMessage({ type: 'success', text: editingId ? '¡Categoría actualizada!' : '¡Categoría creada!' })
       }
     } catch {
       setUploading(false)
       setMessage({ type: 'error', text: 'Error inesperado.' })
     }
-
     setShowModal(false)
     setFormImageFile(null)
     setSaving(false)
@@ -156,32 +144,34 @@ export default function AdminCategoriasPage() {
       return
     }
     if (!confirm(`¿Eliminar la categoría "${name}"?`)) return
-
-    const { error } = await supabase.from('categories').delete().eq('id', id)
-    if (!error) {
+    const res = await fetch('/api/admin/mutate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: 'categories', operation: 'delete', id }),
+    })
+    if (res.ok) {
       setCategories(prev => prev.filter(c => c.id !== id))
       setMessage({ type: 'success', text: 'Categoría eliminada.' })
-      await revalidateStore('category')
-    } else {
-      setMessage({ type: 'error', text: 'Error al eliminar.' })
-    }
+    } else setMessage({ type: 'error', text: 'Error al eliminar.' })
     setTimeout(() => setMessage(null), 3000)
   }
 
   const toggleActive = async (id: string, current: boolean) => {
-    const { error } = await supabase.from('categories').update({ is_active: !current }).eq('id', id)
-    if (!error) {
-      setCategories(prev => prev.map(c => c.id === id ? { ...c, is_active: !current } : c))
-      await revalidateStore('category')
-    }
+    const res = await fetch('/api/admin/mutate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: 'categories', operation: 'update', id, payload: { is_active: !current } }),
+    })
+    if (res.ok) setCategories(prev => prev.map(c => c.id === id ? { ...c, is_active: !current } : c))
   }
 
   const toggleNavbar = async (id: string, current: boolean) => {
-    const { error } = await supabase.from('categories').update({ show_in_navbar: !current }).eq('id', id)
-    if (!error) {
-      setCategories(prev => prev.map(c => c.id === id ? { ...c, show_in_navbar: !current } : c))
-      await revalidateStore('category')
-    }
+    const res = await fetch('/api/admin/mutate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: 'categories', operation: 'update', id, payload: { show_in_navbar: !current } }),
+    })
+    if (res.ok) setCategories(prev => prev.map(c => c.id === id ? { ...c, show_in_navbar: !current } : c))
   }
 
   if (loading) {

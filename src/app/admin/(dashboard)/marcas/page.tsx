@@ -57,27 +57,22 @@ export default function AdminMarcasPage() {
     if (!formName.trim()) return
     setSaving(true)
     const slug = formSlug || generateSlug(formName)
-
-    if (editingId) {
-      const { error } = await supabase.from('brands').update({
-        name: formName.trim(),
-        description: formDesc.trim(),
-        slug,
-      }).eq('id', editingId)
-      if (error) setMessage({ type: 'error', text: 'Error al actualizar.' })
-      else setMessage({ type: 'success', text: '¡Marca actualizada!' })
-    } else {
-      const { error } = await supabase.from('brands').insert({
-        name: formName.trim(),
-        description: formDesc.trim(),
-        slug,
-        display_order: brands.length,
-        is_active: true,
-      })
-      if (error) setMessage({ type: 'error', text: 'Error: ' + error.message })
-      else setMessage({ type: 'success', text: '¡Marca agregada!' })
-    }
-
+    const payload = editingId
+      ? { name: formName.trim(), description: formDesc.trim(), slug }
+      : { name: formName.trim(), description: formDesc.trim(), slug, display_order: brands.length, is_active: true }
+    const res = await fetch('/api/admin/mutate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        table: 'brands',
+        operation: editingId ? 'update' : 'insert',
+        payload,
+        ...(editingId && { id: editingId }),
+      }),
+    })
+    const result = await res.json().catch(() => ({}))
+    if (!res.ok) setMessage({ type: 'error', text: result?.error || 'Error.' })
+    else setMessage({ type: 'success', text: editingId ? '¡Marca actualizada!' : '¡Marca agregada!' })
     setShowModal(false)
     setSaving(false)
     await fetchBrands()
@@ -86,8 +81,12 @@ export default function AdminMarcasPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar esta marca?')) return
-    const { error } = await supabase.from('brands').delete().eq('id', id)
-    if (!error) {
+    const res = await fetch('/api/admin/mutate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: 'brands', operation: 'delete', id }),
+    })
+    if (res.ok) {
       setBrands(prev => prev.filter(b => b.id !== id))
       setMessage({ type: 'success', text: 'Marca eliminada.' })
     } else setMessage({ type: 'error', text: 'Error al eliminar.' })
@@ -95,8 +94,12 @@ export default function AdminMarcasPage() {
   }
 
   const toggleActive = async (id: string, current: boolean) => {
-    const { error } = await supabase.from('brands').update({ is_active: !current }).eq('id', id)
-    if (!error) setBrands(prev => prev.map(b => b.id === id ? { ...b, is_active: !current } : b))
+    const res = await fetch('/api/admin/mutate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: 'brands', operation: 'update', id, payload: { is_active: !current } }),
+    })
+    if (res.ok) setBrands(prev => prev.map(b => b.id === id ? { ...b, is_active: !current } : b))
   }
 
   if (loading) return (

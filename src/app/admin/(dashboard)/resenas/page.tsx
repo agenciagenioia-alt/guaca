@@ -57,31 +57,22 @@ export default function AdminResenasPage() {
   const handleSave = async () => {
     if (!formName.trim() || !formText.trim()) return
     setSaving(true)
-
-    const payload = {
-      customer_name: formName.trim(),
-      review_text: formText.trim(),
-      rating: formRating,
-      is_active: formActive,
-      display_order: editingId ? undefined : reviews.length,
-    }
-
-    if (editingId) {
-      const { rating: _r, display_order: _d, ...updatePayload } = { ...payload }
-      const { error } = await supabase.from('reviews').update({
-        customer_name: formName.trim(),
-        review_text: formText.trim(),
-        rating: formRating,
-        is_active: formActive,
-      }).eq('id', editingId)
-      if (error) setMessage({ type: 'error', text: 'Error al actualizar.' })
-      else setMessage({ type: 'success', text: '¡Reseña actualizada!' })
-    } else {
-      const { error } = await supabase.from('reviews').insert(payload)
-      if (error) setMessage({ type: 'error', text: 'Error al crear. Verifica permisos.' })
-      else setMessage({ type: 'success', text: '¡Reseña agregada!' })
-    }
-
+    const payload = editingId
+      ? { customer_name: formName.trim(), review_text: formText.trim(), rating: formRating, is_active: formActive }
+      : { customer_name: formName.trim(), review_text: formText.trim(), rating: formRating, is_active: formActive, display_order: reviews.length }
+    const res = await fetch('/api/admin/mutate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        table: 'reviews',
+        operation: editingId ? 'update' : 'insert',
+        payload,
+        ...(editingId && { id: editingId }),
+      }),
+    })
+    const result = await res.json().catch(() => ({}))
+    if (!res.ok) setMessage({ type: 'error', text: result?.error || (editingId ? 'Error al actualizar.' : 'Error al crear.') })
+    else setMessage({ type: 'success', text: editingId ? '¡Reseña actualizada!' : '¡Reseña agregada!' })
     setShowModal(false)
     setSaving(false)
     await fetchReviews()
@@ -90,8 +81,12 @@ export default function AdminResenasPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar esta reseña?')) return
-    const { error } = await supabase.from('reviews').delete().eq('id', id)
-    if (!error) {
+    const res = await fetch('/api/admin/mutate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: 'reviews', operation: 'delete', id }),
+    })
+    if (res.ok) {
       setReviews(prev => prev.filter(r => r.id !== id))
       setMessage({ type: 'success', text: 'Reseña eliminada.' })
     } else setMessage({ type: 'error', text: 'Error al eliminar.' })
@@ -99,8 +94,12 @@ export default function AdminResenasPage() {
   }
 
   const toggleActive = async (id: string, current: boolean) => {
-    const { error } = await supabase.from('reviews').update({ is_active: !current }).eq('id', id)
-    if (!error) setReviews(prev => prev.map(r => r.id === id ? { ...r, is_active: !current } : r))
+    const res = await fetch('/api/admin/mutate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: 'reviews', operation: 'update', id, payload: { is_active: !current } }),
+    })
+    if (res.ok) setReviews(prev => prev.map(r => r.id === id ? { ...r, is_active: !current } : r))
   }
 
   if (loading) return (

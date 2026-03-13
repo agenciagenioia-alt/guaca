@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { revalidateStore } from '@/app/admin/actions'
 import { Plus, Trash2, GripVertical, Image as ImageIcon, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import { CameraOrGalleryInput } from '@/components/admin/CameraOrGalleryInput'
@@ -46,24 +45,27 @@ export default function AdminGaleriaPage() {
     try {
       if (newImageFile) {
         setUploading(true)
-        const ext = newImageFile.name.split('.').pop() || 'jpg'
-        const path = `gallery/${crypto.randomUUID()}.${ext}`
-        const { error: uploadError } = await supabase.storage.from('product-images').upload(path, newImageFile, { upsert: true })
+        const fd = new FormData()
+        fd.append('file', newImageFile)
+        fd.append('folder', 'gallery')
+        const up = await fetch('/api/admin/upload', { method: 'POST', body: fd })
         setUploading(false)
-        if (uploadError) throw uploadError
-        const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(path)
-        imageUrl = urlData.publicUrl
+        const upData = await up.json().catch(() => ({}))
+        if (!up.ok) throw new Error(upData?.error || 'Error al subir')
+        imageUrl = upData?.url || imageUrl
       }
-      const { error } = await supabase.from('gallery_images').insert({
-        image_url: imageUrl,
-        alt_text: newAlt.trim() || 'La Guaca',
-        display_order: images.length,
-        is_active: true,
+      const res = await fetch('/api/admin/mutate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          table: 'gallery_images',
+          operation: 'insert',
+          payload: { image_url: imageUrl, alt_text: newAlt.trim() || 'La Guaca', display_order: images.length, is_active: true },
+        }),
       })
-      if (error) {
-        setMessage({ type: 'error', text: 'Error al agregar imagen. Verifica permisos.' })
-      } else {
-        await revalidateStore('gallery')
+      const result = await res.json().catch(() => ({}))
+      if (!res.ok) setMessage({ type: 'error', text: result?.error || 'Error al agregar imagen.' })
+      else {
         setMessage({ type: 'success', text: '¡Imagen agregada!' })
         setNewUrl('')
         setNewImageFile(null)
@@ -81,26 +83,25 @@ export default function AdminGaleriaPage() {
 
   const deleteImage = async (id: string) => {
     if (!confirm('¿Eliminar esta imagen de la galería?')) return
-    const { error } = await supabase.from('gallery_images').delete().eq('id', id)
-    if (!error) {
+    const res = await fetch('/api/admin/mutate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: 'gallery_images', operation: 'delete', id }),
+    })
+    if (res.ok) {
       setImages(prev => prev.filter(img => img.id !== id))
-      await revalidateStore('gallery')
       setMessage({ type: 'success', text: 'Imagen eliminada.' })
-    } else {
-      setMessage({ type: 'error', text: 'Error al eliminar.' })
-    }
+    } else setMessage({ type: 'error', text: 'Error al eliminar.' })
     setTimeout(() => setMessage(null), 3000)
   }
 
   const toggleActive = async (id: string, current: boolean) => {
-    const { error } = await supabase
-      .from('gallery_images')
-      .update({ is_active: !current })
-      .eq('id', id)
-    if (!error) {
-      setImages(prev => prev.map(img => img.id === id ? { ...img, is_active: !current } : img))
-      await revalidateStore('gallery')
-    }
+    const res = await fetch('/api/admin/mutate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table: 'gallery_images', operation: 'update', id, payload: { is_active: !current } }),
+    })
+    if (res.ok) setImages(prev => prev.map(img => img.id === id ? { ...img, is_active: !current } : img))
   }
 
   if (loading) {

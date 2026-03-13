@@ -9,7 +9,6 @@ import { createClient } from '@/lib/supabase/client'
 import { Loader2, Plus, Trash2, ArrowLeft, Upload } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { revalidateStore } from '@/app/admin/actions'
 import { slugify } from '@/lib/utils'
 import { CameraOrGalleryInput } from '@/components/admin/CameraOrGalleryInput'
 
@@ -114,79 +113,34 @@ export default function NuevoProductoPage() {
 
   const onSubmit = async (data: any) => {
     setSubmitting(true)
-    const supabase = createClient()
-
     try {
-      // 1. Crear producto (slug único a partir del nombre + timestamp)
       const baseSlug = slugify(data.name) || 'producto'
       const slug = `${baseSlug}-${Date.now()}`
-      // No enviar brand_id: la columna puede no existir (schema cache)
-      const { data: newProduct, error: productError } = await supabase
-        .from('products')
-        .insert({
-          name: data.name,
-          slug,
-          description: data.description || null,
-          materials_care: data.materials_care?.trim() || null,
-          price: data.price,
-          original_price: data.original_price || null,
-          category_id: data.category_id,
-          is_active: data.is_active,
-          is_featured: data.is_featured,
-          low_stock_alert: data.low_stock_alert,
-        } as any)
-        .select()
-        .single()
-
-      if (productError) throw productError
-      const typedProduct = newProduct as any
-
-      // 2. Crear variantes
-      const variantsToInsert = data.variants.map((v: any, index: number) => ({
-        product_id: typedProduct.id,
-        size: v.size,
-        stock: v.stock,
-        display_order: index,
+      const formData = new FormData()
+      formData.append('product', JSON.stringify({
+        name: data.name,
+        slug,
+        description: data.description || null,
+        materials_care: data.materials_care?.trim() || null,
+        price: data.price,
+        original_price: data.original_price || null,
+        category_id: data.category_id,
+        is_active: data.is_active,
+        is_featured: data.is_featured,
+        low_stock_alert: data.low_stock_alert,
       }))
-      const { error: variantError } = await supabase
-        .from('product_variants')
-        .insert(variantsToInsert as any)
+      formData.append('variants', JSON.stringify(data.variants.map((v: any) => ({ size: v.size, stock: v.stock }))))
+      images.forEach((file) => formData.append('images', file))
 
-      if (variantError) throw variantError
+      const res = await fetch('/api/admin/productos/crear', { method: 'POST', body: formData })
+      const result = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(result?.error || res.statusText)
 
-      // 3. Subir imágenes a Storage y registrar URLs
-      if (images.length > 0) {
-        for (let i = 0; i < images.length; i++) {
-          const file = images[i]
-          const fileExt = file.name.split('.').pop()
-          const fileName = `${typedProduct.id}/${Date.now()}-${i}.${fileExt}`
-
-          const { error: uploadError } = await supabase.storage
-            .from('product-images')
-            .upload(fileName, file)
-
-          if (uploadError) throw uploadError
-
-          const { data: publicUrlData } = supabase.storage
-            .from('product-images')
-            .getPublicUrl(fileName)
-
-          await supabase.from('product_images').insert({
-            product_id: typedProduct.id,
-            image_url: publicUrlData.publicUrl,
-            is_primary: i === 0,
-            display_order: i,
-          } as any)
-        }
-      }
-
-      await revalidateStore('product', typedProduct.slug ?? undefined)
       router.push('/admin/productos')
       router.refresh()
     } catch (error: any) {
       console.error('Error al crear producto:', error)
-      const msg = error?.message || error?.error_description || String(error)
-      alert(`Error al crear producto: ${msg}`)
+      alert(`Error al crear producto: ${error?.message || String(error)}`)
     } finally {
       setSubmitting(false)
     }

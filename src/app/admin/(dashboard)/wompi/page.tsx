@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { revalidateStore } from '@/app/admin/actions'
 import { Loader2, Copy, Check, ExternalLink } from 'lucide-react'
 import { useToastStore } from '@/store/toast'
 
@@ -46,23 +45,16 @@ export default function AdminWompiPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-    const supabase = createClient() as any
-    const { error } = await supabase
-      .from('store_config')
-      .update({
-        wompi_public_key: form.wompi_public_key.trim() || null,
-        wompi_integrity_key: form.wompi_integrity_key.trim() || null,
-        wompi_events_key: form.wompi_events_key.trim() || null,
-      })
-      .eq('id', 1)
-
-    if (error) {
-      console.error('Wompi save error:', error)
-      addToast(`Error: ${error.message || error.code || 'Desconocido'} — ${error.details || ''}`, 'error')
-    } else {
-      await revalidateStore('config')
-      addToast('Configuración de Wompi guardada', 'success')
-    }
+    const formData = new FormData()
+    formData.append('config', JSON.stringify({
+      wompi_public_key: form.wompi_public_key.trim() || null,
+      wompi_integrity_key: form.wompi_integrity_key.trim() || null,
+      wompi_events_key: form.wompi_events_key.trim() || null,
+    }))
+    const res = await fetch('/api/admin/store-config', { method: 'POST', body: formData })
+    const result = await res.json().catch(() => ({}))
+    if (!res.ok) addToast(result?.error || 'Error al guardar', 'error')
+    else addToast('Configuración de Wompi guardada', 'success')
     setSaving(false)
   }
 

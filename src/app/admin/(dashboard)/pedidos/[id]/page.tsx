@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatCOP } from '@/lib/utils'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { ArrowLeft, MessageCircle, MapPin, User, Package, CalendarClock, CreditCard } from 'lucide-react'
 import Link from 'next/link'
+import { OrderStatusForm } from './OrderStatusForm'
 
 export const metadata = {
   title: 'Detalle de Pedido | La Guaca Admin',
@@ -16,7 +17,6 @@ export default async function AdminDetallePedidoPage({ params }: Props) {
   const { id } = await params
   const supabase = (await createClient()) as any
 
-  // 1. Obtener datos del pedido
   const { data: order } = await supabase
     .from('orders')
     .select('*, items:order_items(*)')
@@ -24,29 +24,6 @@ export default async function AdminDetallePedidoPage({ params }: Props) {
     .single()
 
   if (!order) notFound()
-
-  // 2. Acción para actualizar estado (Server Action interna manejada vía formulario simple o en BD para MVP)
-  // En Next.js App Router, usar server actions es ideal, pero por simplicidad haremos un pequeño formulario que envíe a un endpoint / o cambie el status acá
-  // Para MVP sin tocar mucho boilerplate, definiremos una server action acá mismo:
-  async function updateStatus(formData: FormData) {
-    'use server'
-    const newStatus = formData.get('status') as string
-    const trackingCode = formData.get('tracking_code') as string
-
-    if (!newStatus) return
-
-    const client = (await createClient()) as any
-    await client
-      .from('orders')
-      .update({
-        status: newStatus,
-        tracking_code: trackingCode || null,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-
-    // revalidatePath('/admin/pedidos') (opcional en un flujo normal)
-  }
 
   // Generar link WhatsApp para hablar con cliente
   const waLink = `https://wa.me/${order.customer_phone}?text=Hola%20${order.customer_name},%20te%20escribimos%20de%20La%20Guaca%20respecto%20a%20tu%20pedido%20${order.order_number}`
@@ -140,45 +117,11 @@ export default async function AdminDetallePedidoPage({ params }: Props) {
               <strong>Cuándo usar cada estado:</strong> Pendiente = sin pagar. Confirmado = el cliente ya pagó (se pone automático). Preparando = estás empacando. Enviado = ya despachaste (opcional: agrega la guía). Entregado = el cliente recibió el pedido. El cliente ve estos cambios en &quot;Rastrear pedido&quot;.
             </p>
 
-            <form action={updateStatus} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1.5">
-                  Estado actual
-                </label>
-                <select
-                  name="status"
-                  defaultValue={order.status}
-                  className="w-full px-4 py-2 bg-background border border-border rounded-md text-foreground focus:border-[rgba(232,230,225,0.25)]"
-                >
-                  <option value="pendiente">Pendiente (Sin pagar)</option>
-                  <option value="confirmado">Confirmado (Pagado)</option>
-                  <option value="preparando">Preparando (Empacando)</option>
-                  <option value="enviado">Enviado (En trayecto)</option>
-                  <option value="entregado">Entregado</option>
-                  <option value="cancelado">Cancelado</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1.5">
-                  Guía de envío (Opcional)
-                </label>
-                <input
-                  type="text"
-                  name="tracking_code"
-                  defaultValue={order.tracking_code || ''}
-                  placeholder="Ej: Interrapidisimo - 123456789"
-                  className="w-full px-4 py-2 bg-background border border-border rounded-md text-foreground focus:border-[rgba(232,230,225,0.25)]"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-[#E8E6E1] hover:bg-[#E8E6E1]-hover text-background font-bold py-2.5 rounded-md transition-colors"
-              >
-                Actualizar Pedido
-              </button>
-            </form>
+            <OrderStatusForm
+              orderId={id}
+              currentStatus={order.status}
+              currentTrackingCode={order.tracking_code}
+            />
           </div>
         </div>
 

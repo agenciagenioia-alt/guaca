@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/client'
-import { revalidateStore } from '@/app/admin/actions'
 import { Loader2, Store, Megaphone, Link as LinkIcon, AlertCircle, Share2, Type, ImageIcon, MessageSquare, Truck, Shirt } from 'lucide-react'
 import { CameraOrGalleryInput } from '@/components/admin/CameraOrGalleryInput'
 
@@ -115,21 +114,7 @@ export default function AdminConfiguracionPage() {
   const onSubmit = async (data: any) => {
     setSubmitting(true)
     setMessage(null)
-    const supabase = createClient() as any
-
     try {
-      let hero_image_url = (data.hero_image_url || '').trim() || null
-      if (heroImageFile) {
-        setUploading(true)
-        const ext = heroImageFile.name.split('.').pop() || 'jpg'
-        const path = `hero/${Date.now()}.${ext}`
-        const { error: uploadError } = await supabase.storage.from('product-images').upload(path, heroImageFile, { upsert: true })
-        setUploading(false)
-        if (uploadError) throw uploadError
-        const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(path)
-        hero_image_url = urlData.publicUrl
-      }
-
       const payload: Record<string, unknown> = {
         store_name: data.store_name,
         store_description: data.store_description || null,
@@ -142,19 +127,23 @@ export default function AdminConfiguracionPage() {
         sold_out_message: data.sold_out_message?.trim() || null,
         sold_out_whatsapp_message: data.sold_out_whatsapp_message?.trim() || null,
         shipping_returns_text: data.shipping_returns_text?.trim() || null,
-        hero_image_url,
+        hero_image_url: (data.hero_image_url || '').trim() || null,
         hero_video_url: data.hero_video_url || null,
         outfit_section_enabled: outfitSectionEnabled,
         outfit_product_ids: outfitSectionEnabled && selectedOutfitProductIds.length > 0 ? JSON.stringify(selectedOutfitProductIds) : null,
       }
-
-      const { error } = await supabase.from('store_config').update(payload).eq('id', 1)
-      if (error) throw error
-
+      const formData = new FormData()
+      formData.append('config', JSON.stringify(payload))
+      if (heroImageFile) {
+        setUploading(true)
+        formData.append('heroImage', heroImageFile)
+      }
+      const res = await fetch('/api/admin/store-config', { method: 'POST', body: formData })
+      const result = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(result?.error || res.statusText)
       setHeroImageFile(null)
-      try { await revalidateStore('config') } catch (_) {}
       setMessage({ type: 'success', text: '¡Configuración guardada exitosamente!' })
-      try { router.refresh() } catch (_) {}
+      router.refresh()
       setTimeout(() => setMessage(null), 8000)
     } catch (err: unknown) {
       setUploading(false)
