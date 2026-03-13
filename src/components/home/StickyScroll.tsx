@@ -76,21 +76,18 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
           }}
         />
 
-        {/* Video: altura controlada en móvil para que el texto no quede tapado, bordes redondeados */}
-        <div className="relative w-full flex-shrink-0 px-3 pt-3">
-          <div className="relative w-full aspect-[16/9] max-h-[40vh] overflow-hidden rounded-xl bg-black mx-auto">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ objectPosition: 'center 32%' }}
-            >
-              <source src={videoUrl} type="video/mp4" />
-            </video>
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/25 via-transparent to-transparent" />
-          </div>
+        {/* Video como el banner de abajo: ancho completo, buena altura, object-contain para no cortar palabras */}
+        <div className="relative w-full h-[55vh] flex-shrink-0 overflow-hidden bg-black">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-contain object-center"
+          >
+            <source src={videoUrl} type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-[#0a0a0a]/80" />
         </div>
 
         <div className="relative flex-1 flex flex-col justify-center min-h-0 pt-6 pb-24 px-5 text-center z-10">
