@@ -92,7 +92,7 @@ export default function AdminCategoriasPage() {
         const fd = new FormData()
         fd.append('file', formImageFile)
         fd.append('folder', 'categories')
-        const up = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+        const up = await fetch('/api/admin/upload', { method: 'POST', body: fd, credentials: 'include' })
         setUploading(false)
         const upData = await up.json().catch(() => ({}))
         if (!up.ok) {

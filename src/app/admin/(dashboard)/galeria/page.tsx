@@ -48,7 +48,7 @@ export default function AdminGaleriaPage() {
         const fd = new FormData()
         fd.append('file', newImageFile)
         fd.append('folder', 'gallery')
-        const up = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+        const up = await fetch('/api/admin/upload', { method: 'POST', body: fd, credentials: 'include' })
         setUploading(false)
         const upData = await up.json().catch(() => ({}))
         if (!up.ok) throw new Error(upData?.error || 'Error al subir')

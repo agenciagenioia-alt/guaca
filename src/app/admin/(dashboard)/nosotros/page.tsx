@@ -101,10 +101,19 @@ export default function AdminNosotrosPage() {
     const fd = new FormData()
     fd.append('file', file)
     fd.append('folder', folder)
-    const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
-    const data = await res.json().catch(() => ({}))
+    const res = await fetch('/api/admin/upload', { method: 'POST', body: fd, credentials: 'include' })
+    let data: { error?: string; url?: string } = {}
+    try {
+      const text = await res.text()
+      if (text) data = JSON.parse(text)
+    } catch {
+      if (res.status === 413) data = { error: 'Archivo demasiado grande (máx. 4 MB). Comprime el video o usa uno más corto.' }
+    }
     if (!res.ok) {
-      setMessage({ type: 'error', text: data?.error || 'Error subiendo archivo' })
+      const msg = res.status === 413
+        ? (data?.error || 'Archivo demasiado grande. Comprime el video o usa uno más corto.')
+        : (data?.error || 'Error subiendo archivo')
+      setMessage({ type: 'error', text: msg })
       return null
     }
     return data?.url || null
