@@ -66,22 +66,27 @@ export default async function ProductoPage({ params }: Props) {
     const discount = hasDiscount ? calcDiscount(product.original_price!, product.price) : 0
     const showUrgency = product.low_stock_alert > 0 && totalStock <= product.low_stock_alert && totalStock > 0
 
-    // Productos relacionados (misma categoría)
-    const { data: relatedData } = await supabase
-        .from('products')
-        .select('*, images:product_images(*), variants:product_variants(*)')
-        .eq('category_id', product.category_id!)
-        .neq('id', product.id)
-        .eq('is_active', true)
-        .limit(4)
+    // Relacionados y config en paralelo para responder más rápido
+    const categoryId = product.category_id ?? null
+    const [relatedRes, configRes] = await Promise.allSettled([
+        categoryId
+            ? supabase
+                .from('products')
+                .select('*, images:product_images(*), variants:product_variants(*)')
+                .eq('category_id', categoryId)
+                .neq('id', product.id)
+                .eq('is_active', true)
+                .limit(4)
+            : Promise.resolve({ data: [] }),
+        supabase
+            .from('store_config')
+            .select('sold_out_message, sold_out_whatsapp_message, owner_whatsapp, shipping_returns_text')
+            .eq('id', 1)
+            .single(),
+    ])
 
-    const related = relatedData as any[]
-
-    const { data: storeConfigData } = await supabase
-        .from('store_config')
-        .select('sold_out_message, sold_out_whatsapp_message, owner_whatsapp, shipping_returns_text')
-        .eq('id', 1)
-        .single()
+    const related = (relatedRes.status === 'fulfilled' ? relatedRes.value.data : []) as any[]
+    const storeConfigData = configRes.status === 'fulfilled' ? configRes.value.data : null
     const storeConfig = storeConfigData as { sold_out_message?: string | null; sold_out_whatsapp_message?: string | null; owner_whatsapp?: string | null; shipping_returns_text?: string | null } | null
 
     const sortedImages = [...(product.images || [])].sort(

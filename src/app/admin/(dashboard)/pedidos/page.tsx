@@ -29,8 +29,11 @@ export default async function AdminPedidosPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold font-heading">Pedidos</h1>
-        <p className="text-sm text-foreground-muted">
+        <p className="text-sm text-foreground-muted mt-1">
           Revisa y gestiona las compras realizadas. Los nuevos pedidos aparecen en tiempo real.
+        </p>
+        <p className="text-xs text-foreground-muted mt-2 bg-surface-hover/50 border border-border inline-block px-3 py-2 rounded-md">
+          Los pedidos en <strong>Pendiente</strong> son compras que no completaron el pago en Wompi. Puedes eliminarlos si son pruebas.
         </p>
       </div>
 

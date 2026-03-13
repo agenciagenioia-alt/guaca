@@ -155,8 +155,13 @@ export default function CheckoutPage() {
 
             const data = await res.json()
             const pk = typeof data.publicKey === 'string' ? data.publicKey.trim() : ''
-            if (!pk) {
-                setErrors({ form: 'Error: no se recibió la llave de pago. Revisa NEXT_PUBLIC_WOMPI_PUBLIC_KEY en Vercel.' })
+            if (!pk || pk === 'undefined') {
+                setErrors({ form: 'No se recibió la llave de pago. En Vercel → Settings → Environment Variables añade NEXT_PUBLIC_WOMPI_PUBLIC_KEY con la llave de Wompi (pub_prod_ o pub_test_).' })
+                setIsLoading(false)
+                return
+            }
+            if (!pk.startsWith('pub_prod_') && !pk.startsWith('pub_test_')) {
+                setErrors({ form: 'La llave de Wompi no es válida. Debe empezar por pub_prod_ o pub_test_. Revisa NEXT_PUBLIC_WOMPI_PUBLIC_KEY en Vercel.' })
                 setIsLoading(false)
                 return
             }

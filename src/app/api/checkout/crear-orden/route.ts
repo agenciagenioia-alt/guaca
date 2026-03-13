@@ -150,6 +150,12 @@ export async function POST(req: NextRequest) {
     if (!pk || !sigSecret) {
       return NextResponse.json({ error: 'Llaves de Wompi vacías. Revisa las variables en Vercel.' }, { status: 500 })
     }
+    if (pk === 'undefined' || pk.toLowerCase() === 'undefined') {
+      return NextResponse.json({ error: 'La llave pública de Wompi no está configurada (valor "undefined"). En Vercel → Settings → Environment Variables añade NEXT_PUBLIC_WOMPI_PUBLIC_KEY con tu llave de Wompi (empieza por pub_prod_ o pub_test_).' }, { status: 500 })
+    }
+    if (!pk.startsWith('pub_prod_') && !pk.startsWith('pub_test_')) {
+      return NextResponse.json({ error: 'La llave pública de Wompi no es válida. Debe empezar por pub_prod_ (producción) o pub_test_ (pruebas). Revisa NEXT_PUBLIC_WOMPI_PUBLIC_KEY en Vercel.' }, { status: 500 })
+    }
     // Firma Wompi: Reference + Amount (centavos) + Currency + IntegritySecret
     const signatureString = `${orderNumber}${amountInCents}${currency}${sigSecret}`
     const signature = crypto.createHash('sha256').update(signatureString).digest('hex')

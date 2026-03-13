@@ -23,9 +23,24 @@ interface PedidosListProps {
   initialOrders: OrderRow[]
 }
 
+const STATUS_OPTIONS = [
+  { value: 'todos', label: 'Todos' },
+  { value: 'pendiente', label: 'Pendientes' },
+  { value: 'confirmado', label: 'Confirmados' },
+  { value: 'preparando', label: 'Preparando' },
+  { value: 'enviado', label: 'Enviados' },
+  { value: 'entregado', label: 'Entregados' },
+]
+
 export function PedidosList({ initialOrders }: PedidosListProps) {
   const [orders, setOrders] = useState<OrderRow[]>(initialOrders)
+  const [statusFilter, setStatusFilter] = useState<string>('todos')
   const addToast = useToastStore((s) => s.addToast)
+
+  const filteredOrders =
+    statusFilter === 'todos'
+      ? orders
+      : orders.filter((o) => o.status === statusFilter)
 
   useEffect(() => {
     const supabase = createClient()
@@ -51,7 +66,25 @@ export function PedidosList({ initialOrders }: PedidosListProps) {
   }, [addToast])
 
   return (
-    <div className="overflow-x-auto">
+    <div>
+      <div className="p-4 border-b border-border flex flex-wrap items-center gap-2">
+        <span className="text-xs font-medium text-foreground-muted uppercase tracking-wider">Estado:</span>
+        {STATUS_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => setStatusFilter(opt.value)}
+            className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+              statusFilter === opt.value
+                ? 'bg-[#E8E6E1] text-background border-[#E8E6E1]'
+                : 'bg-transparent border-border text-foreground-muted hover:text-foreground hover:border-foreground/30'
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+      <div className="overflow-x-auto">
       <table className="w-full text-sm text-left">
         <thead className="text-xs text-foreground-muted uppercase bg-surface-hover">
           <tr>
@@ -64,14 +97,16 @@ export function PedidosList({ initialOrders }: PedidosListProps) {
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
-          {orders.length === 0 ? (
+          {filteredOrders.length === 0 ? (
             <tr>
               <td colSpan={6} className="text-center py-12 text-foreground-muted">
-                Aún no tienes pedidos registrados.
+                {orders.length === 0
+                  ? 'Aún no tienes pedidos registrados.'
+                  : `No hay pedidos con estado "${STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label ?? statusFilter}".`}
               </td>
             </tr>
           ) : (
-            orders.map((order) => (
+            filteredOrders.map((order) => (
               <tr
                 id={`order-row-${order.id}`}
                 key={order.id}
@@ -136,6 +171,7 @@ export function PedidosList({ initialOrders }: PedidosListProps) {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   )
 }

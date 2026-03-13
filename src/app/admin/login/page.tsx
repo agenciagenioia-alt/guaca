@@ -2,43 +2,44 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [localError, setLocalError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  // Leer error de la URL si el servidor redirigió con parámetros
-  const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
-  const error = localError || searchParams.get('error')
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+  const urlError = searchParams?.get('error') ?? null
+  const displayError = error || urlError
 
-  // Cuando el form se envíe, simplemente mostramos el loading
-  // La acción real sucederá en action="/auth/login" natively
-  const handleSubmit = () => {
-    setLoading(true)
-  }
-
-  const handleResetPassword = async () => {
-    if (!email) {
-      setLocalError('Por favor, ingresa tu correo primero.')
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!password.trim()) {
+      setError('Ingresa la contraseña')
       return
     }
-
     setLoading(true)
-    const supabase = createClient()
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/admin/reset-password`,
-    })
-
-    if (resetError) {
-      setLocalError('Error al enviar el correo de recuperación.')
-    } else {
-      setLocalError('Correo de recuperación enviado. Revisa tu bandeja de entrada.')
+    setError(null)
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: password.trim() }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data.error || 'Contraseña incorrecta')
+        setLoading(false)
+        return
+      }
+      router.push('/admin')
+      router.refresh()
+    } catch {
+      setError('Error de conexión')
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
@@ -53,57 +54,34 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
-        <form action="/auth/login" method="POST" onSubmit={handleSubmit} className="space-y-6 bg-surface p-8 rounded-xl border border-border">
-          {error && (
+        <form onSubmit={handleSubmit} className="space-y-6 bg-surface p-8 rounded-xl border border-border">
+          {displayError && (
             <div className="bg-error/10 border border-error/50 text-error text-sm p-3 rounded-md" role="alert">
-              {error}
+              {displayError}
             </div>
           )}
 
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1.5" htmlFor="email">
-                Correo electrónico
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-background border border-border rounded-md text-foreground focus:border-[rgba(232,230,225,0.25)] transition-colors"
-                placeholder="admin@laguaca.co"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-medium" htmlFor="password">
-                  Contraseña
-                </label>
-                <button
-                  type="button"
-                  className="text-xs text-foreground-muted hover:text-[#E8E6E1] transition-colors"
-                >
-                  ¿Olvidaste tu contraseña?
-                </button>
-              </div>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="w-full px-4 py-3 bg-background border border-border rounded-md text-foreground focus:border-[rgba(232,230,225,0.25)] transition-colors"
-                placeholder="••••••••"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium mb-1.5" htmlFor="password">
+              Contraseña
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 bg-background border border-border rounded-md text-foreground focus:border-[rgba(232,230,225,0.25)] transition-colors"
+              placeholder="••••••••"
+              autoComplete="current-password"
+            />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#E8E6E1] text-background font-bold py-3 rounded-md hover:bg-[#E8E6E1]-hover transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-[#E8E6E1] text-background font-bold py-3 rounded-md hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-70"
           >
             {loading ? (
               <>

@@ -136,6 +136,9 @@ export default async function AdminDetallePedidoPage({ params }: Props) {
               <CreditCard className="w-5 h-5" />
               Gestión del Pedido
             </h2>
+            <p className="text-xs text-foreground-muted mb-4 pb-4 border-b border-border">
+              <strong>Cuándo usar cada estado:</strong> Pendiente = sin pagar. Confirmado = el cliente ya pagó (se pone automático). Preparando = estás empacando. Enviado = ya despachaste (opcional: agrega la guía). Entregado = el cliente recibió el pedido. El cliente ve estos cambios en &quot;Rastrear pedido&quot;.
+            </p>
 
             <form action={updateStatus} className="space-y-4">
               <div>
@@ -147,8 +150,9 @@ export default async function AdminDetallePedidoPage({ params }: Props) {
                   defaultValue={order.status}
                   className="w-full px-4 py-2 bg-background border border-border rounded-md text-foreground focus:border-[rgba(232,230,225,0.25)]"
                 >
-                  <option value="pendiente">Pendiente (Sin pagar confi)</option>
+                  <option value="pendiente">Pendiente (Sin pagar)</option>
                   <option value="confirmado">Confirmado (Pagado)</option>
+                  <option value="preparando">Preparando (Empacando)</option>
                   <option value="enviado">Enviado (En trayecto)</option>
                   <option value="entregado">Entregado</option>
                   <option value="cancelado">Cancelado</option>

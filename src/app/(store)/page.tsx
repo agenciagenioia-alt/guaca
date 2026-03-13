@@ -27,33 +27,33 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-    unstable_noStore() // Evita caché: cada visita obtiene datos frescos (categorías, config, productos)
+    unstable_noStore()
     const supabase = await createClient()
 
-    // Productos destacados
-    const { data: featuredData } = await supabase
-        .from('products')
-        .select('*, images:product_images(*), variants:product_variants(*)')
-        .eq('is_featured', true)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-        .limit(8)
-    const featured: any[] = featuredData || []
+    // Cargar en paralelo; si una petición falla, el resto sigue mostrándose (no se cae la página)
+    const [featuredRes, categoriesRes, configRes] = await Promise.allSettled([
+        supabase
+            .from('products')
+            .select('*, images:product_images(*), variants:product_variants(*)')
+            .eq('is_featured', true)
+            .eq('is_active', true)
+            .order('created_at', { ascending: false })
+            .limit(8),
+        supabase
+            .from('categories')
+            .select('*')
+            .eq('is_active', true)
+            .order('display_order'),
+        supabase
+            .from('store_config')
+            .select('*')
+            .eq('id', 1)
+            .single(),
+    ])
 
-    // Categorías activas
-    const { data: categoriesData } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order')
-    const categories: any[] = categoriesData || []
-
-    // Config
-    const { data: config } = await supabase
-        .from('store_config')
-        .select('*')
-        .eq('id', 1)
-        .single()
+    const featured: any[] = featuredRes.status === 'fulfilled' ? (featuredRes.value.data || []) : []
+    const categories: any[] = categoriesRes.status === 'fulfilled' ? (categoriesRes.value.data || []) : []
+    const config = configRes.status === 'fulfilled' ? (configRes.value.data as any) : null
 
     return (
         <>

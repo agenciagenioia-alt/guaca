@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/client'
 import { revalidateStore } from '@/app/admin/actions'
-import { Loader2, Store, Megaphone, Link as LinkIcon, AlertCircle, Share2, Type, ImageIcon, MessageSquare, Truck } from 'lucide-react'
+import { Loader2, Store, Megaphone, Link as LinkIcon, AlertCircle, Share2, Type, ImageIcon, MessageSquare, Truck, Shirt } from 'lucide-react'
 import { CameraOrGalleryInput } from '@/components/admin/CameraOrGalleryInput'
 
 // Schema con mensajes amigables y validaciones específicas para Colombia
@@ -44,6 +44,9 @@ export default function AdminConfiguracionPage() {
   const [loading, setLoading] = useState(true)
   const [heroImageFile, setHeroImageFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [outfitSectionEnabled, setOutfitSectionEnabled] = useState(false)
+  const [selectedOutfitProductIds, setSelectedOutfitProductIds] = useState<string[]>([])
+  const [outfitProductsList, setOutfitProductsList] = useState<{ id: string; name: string; slug: string }[]>([])
 
   const {
     register,
@@ -94,7 +97,16 @@ export default function AdminConfiguracionPage() {
           hero_image_url: typedData.hero_image_url || '',
           hero_video_url: typedData.hero_video_url || '',
         })
+        setOutfitSectionEnabled(Boolean(typedData.outfit_section_enabled))
+        try {
+          const ids = typedData.outfit_product_ids ? JSON.parse(typedData.outfit_product_ids) : []
+          setSelectedOutfitProductIds(Array.isArray(ids) ? ids : [])
+        } catch {
+          setSelectedOutfitProductIds([])
+        }
       }
+      const { data: products } = await supabase.from('products').select('id, name, slug').eq('is_active', true).order('name')
+      setOutfitProductsList((products || []) as { id: string; name: string; slug: string }[])
       setLoading(false)
     }
     fetchConfig()
@@ -132,6 +144,8 @@ export default function AdminConfiguracionPage() {
         shipping_returns_text: data.shipping_returns_text?.trim() || null,
         hero_image_url,
         hero_video_url: data.hero_video_url || null,
+        outfit_section_enabled: outfitSectionEnabled,
+        outfit_product_ids: outfitSectionEnabled && selectedOutfitProductIds.length > 0 ? JSON.stringify(selectedOutfitProductIds) : null,
       }
 
       const { error } = await supabase.from('store_config').update(payload).eq('id', 1)
@@ -280,6 +294,57 @@ export default function AdminConfiguracionPage() {
                 Este texto se abrirá ya escrito en WhatsApp cuando el cliente haga clic en &quot;Escribir por WhatsApp&quot;. Usa <code className="bg-background px-1 rounded">{'{{product_name}}'}</code> para insertar el nombre del producto.
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Completa tu outfit (carrito) */}
+        <div className="bg-surface border border-border rounded-xl p-6">
+          <h2 className="text-lg font-bold font-heading flex items-center gap-2 mb-6">
+            <Shirt className="w-5 h-5 text-[#E8E6E1]" />
+            Completa tu outfit (carrito)
+          </h2>
+          <div className="space-y-4">
+            <label className="flex items-center gap-3 cursor-pointer p-3 bg-background border border-border rounded-lg hover:border-[rgba(232,230,225,0.25)] transition-colors">
+              <input
+                type="checkbox"
+                checked={outfitSectionEnabled}
+                onChange={(e) => setOutfitSectionEnabled(e.target.checked)}
+                className="w-4 h-4 rounded border-border text-[#E8E6E1] focus:ring-gold bg-background"
+              />
+              <div className="flex flex-col">
+                <span className="text-sm font-bold">Mostrar sección &quot;Completa tu outfit&quot; en el carrito</span>
+                <span className="text-xs text-foreground-muted">Cuando el cliente abre el carrito, verá productos sugeridos para agregar.</span>
+              </div>
+            </label>
+            {outfitSectionEnabled && (
+              <div className="pt-2 border-t border-border">
+                <label className="block text-sm font-medium mb-2">Productos a mostrar (elige los que quieras)</label>
+                <p className="text-xs text-foreground-muted mb-3">Marca los productos que quieres recomendar en el carrito. El orden aquí no define el orden en la tienda.</p>
+                <div className="max-h-48 overflow-y-auto space-y-2 p-2 bg-background border border-border rounded-md">
+                  {outfitProductsList.length === 0 ? (
+                    <p className="text-sm text-foreground-muted">No hay productos activos. Crea productos en la sección Productos.</p>
+                  ) : (
+                    outfitProductsList.map((p) => (
+                      <label key={p.id} className="flex items-center gap-3 cursor-pointer py-1.5 px-2 rounded hover:bg-surface-hover">
+                        <input
+                          type="checkbox"
+                          checked={selectedOutfitProductIds.includes(p.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedOutfitProductIds((prev) => [...prev, p.id])
+                            } else {
+                              setSelectedOutfitProductIds((prev) => prev.filter((id) => id !== p.id))
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-border text-[#E8E6E1] bg-background"
+                        />
+                        <span className="text-sm text-foreground truncate">{p.name}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

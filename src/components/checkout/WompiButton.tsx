@@ -23,9 +23,11 @@ export default function WompiButton({
   const [ready, setReady] = useState(false)
   const [error, setError] = useState(false)
 
+  const pkTrim = typeof publicKey === 'string' ? publicKey.trim() : ''
   const hasValidParams =
-    typeof publicKey === 'string' &&
-    publicKey.trim().length > 0 &&
+    pkTrim.length > 0 &&
+    pkTrim !== 'undefined' &&
+    (pkTrim.startsWith('pub_prod_') || pkTrim.startsWith('pub_test_')) &&
     typeof signature === 'string' &&
     signature.trim().length > 0 &&
     Number(amountInCents) > 0 &&
@@ -89,7 +91,7 @@ export default function WompiButton({
       <div className="w-full text-center py-4 space-y-3">
         <p className="text-red-400 text-sm font-medium">No se pudo cargar el widget de pago.</p>
         <p className="text-foreground-muted text-xs max-w-sm mx-auto">
-          Revisa que en Vercel (Variables de entorno) estén bien configuradas <strong>NEXT_PUBLIC_WOMPI_PUBLIC_KEY</strong> y <strong>WOMPI_INTEGRITY_KEY</strong> con las llaves que te da Wompi en Developers → Secrets for technical integration.
+          En Vercel → Settings → Environment Variables agrega <strong>NEXT_PUBLIC_WOMPI_PUBLIC_KEY</strong> (llave que empieza por <code>pub_prod_</code> o <code>pub_test_</code>) y <strong>WOMPI_INTEGRITY_KEY</strong> (secreto de integridad de Wompi). Luego haz Redeploy.
         </p>
         <button
           type="button"

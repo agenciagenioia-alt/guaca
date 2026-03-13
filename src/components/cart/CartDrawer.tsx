@@ -3,40 +3,25 @@
 import { useCartStore, type CartItem } from '@/store/cart'
 import { formatCOP } from '@/lib/utils'
 import { AnimatePresence, motion } from 'framer-motion'
-import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react'
+import { X, Plus, Minus, ShoppingBag } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+interface OutfitProduct {
+    id: string
+    name: string
+    slug: string
+    price: number
+    imageUrl: string
+    defaultSize: string
+}
 
-// Mock Data para Upsell (Podría venir de Supabase en el futuro)
-const UPSELL_ITEMS = [
-    {
-        id: 'acc-001',
-        name: 'Medias Nike Essential',
-        slug: 'medias-nike-essential',
-        price: 45000,
-        image: 'https://images.unsplash.com/photo-1582966772680-e37456d812ce?w=200',
-        size: 'ÚNICA'
-    },
-    {
-        id: 'acc-002',
-        name: 'Cordones Reflectivos',
-        slug: 'cordones-reflectivos',
-        price: 25000,
-        image: 'https://images.unsplash.com/photo-1620806496465-420459a0f001?w=200',
-        size: '120CM'
-    },
-    {
-        id: 'acc-003',
-        name: 'Kit de Limpieza Reshoevn8r',
-        slug: 'kit-limpieza-sneakers',
-        price: 120000,
-        image: 'https://images.unsplash.com/photo-1585864380108-a4005cf3980a?w=200',
-        size: 'KIT'
-    }
-]
+interface CartDrawerProps {
+    outfitEnabled?: boolean
+    outfitProducts?: OutfitProduct[]
+}
 
-export function CartDrawer() {
+export function CartDrawer({ outfitEnabled = false, outfitProducts = [] }: CartDrawerProps) {
     const { items, isOpen, closeCart, removeItem, updateQuantity, totalPrice, addItem } =
         useCartStore()
     const drawerRef = useRef<HTMLDivElement>(null)
@@ -139,49 +124,60 @@ export function CartDrawer() {
                                     ))}
                                 </ul>
 
-                                {/* UPSELL MODULE (Solo si hay items en el carrito) */}
-                                <div className="p-4 md:p-6 pb-2 border-t border-border bg-surface">
-                                    <h3 className="text-[11px] font-mono tracking-[0.2em] text-foreground-subtle uppercase mb-4 flex items-center gap-2">
-                                        <span className="w-1.5 h-1.5 bg-foreground rounded-full animate-pulse opacity-50" />
-                                        COMPLETA TU OUTFIT
-                                    </h3>
+                                {/* Completa tu outfit (solo si está activado en Admin y hay productos configurados) */}
+                                {outfitEnabled && outfitProducts.length > 0 && (
+                                    <div className="p-4 md:p-6 pb-2 border-t border-border bg-surface">
+                                        <h3 className="text-[11px] font-mono tracking-[0.2em] text-foreground-subtle uppercase mb-4 flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 bg-foreground rounded-full animate-pulse opacity-50" />
+                                            COMPLETA TU OUTFIT
+                                        </h3>
 
-                                    <div className="flex overflow-x-auto gap-3 pb-4 snap-x hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
-                                        {UPSELL_ITEMS.filter(u => !items.some(i => i.productId === u.id)).map(upsell => (
-                                            <div key={upsell.id} className="min-w-[160px] bg-background border border-border p-2 rounded-[2px] snap-start group relative">
-                                                <div className="flex gap-3">
-                                                    <div className="w-[50px] h-[60px] relative bg-surface shrink-0 overflow-hidden">
-                                                        <Image
-                                                            src={upsell.image}
-                                                            alt={upsell.name}
-                                                            fill
-                                                            className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                                            sizes="50px"
-                                                        />
-                                                    </div>
-                                                    <div className="flex flex-col justify-center">
-                                                        <span className="text-[12px] font-bold text-foreground line-clamp-1 leading-tight">{upsell.name}</span>
-                                                        <span className="text-[11px] font-mono text-foreground-subtle mt-1">{formatCOP(upsell.price)}</span>
-                                                    </div>
-                                                </div>
+                                        <div className="flex overflow-x-auto gap-3 pb-4 snap-x hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
+                                            {outfitProducts
+                                                .filter((u) => !items.some((i) => i.productId === u.id))
+                                                .map((upsell) => (
+                                                    <div key={upsell.id} className="min-w-[160px] bg-background border border-border p-2 rounded-[2px] snap-start group relative">
+                                                        <div className="flex gap-3">
+                                                            <div className="w-[50px] h-[60px] relative bg-surface shrink-0 overflow-hidden">
+                                                                {upsell.imageUrl ? (
+                                                                    <Image
+                                                                        src={upsell.imageUrl}
+                                                                        alt={upsell.name}
+                                                                        fill
+                                                                        className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                                                        sizes="50px"
+                                                                        unoptimized={upsell.imageUrl.includes('supabase.co')}
+                                                                    />
+                                                                ) : (
+                                                                    <div className="absolute inset-0 bg-border flex items-center justify-center text-[10px] text-foreground-muted">IMG</div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex flex-col justify-center min-w-0">
+                                                                <span className="text-[12px] font-bold text-foreground line-clamp-1 leading-tight">{upsell.name}</span>
+                                                                <span className="text-[11px] font-mono text-foreground-subtle mt-1">{formatCOP(upsell.price)}</span>
+                                                            </div>
+                                                        </div>
 
-                                                <button
-                                                    onClick={() => addItem({
-                                                        productId: upsell.id,
-                                                        productName: upsell.name,
-                                                        productSlug: upsell.slug,
-                                                        unitPrice: upsell.price,
-                                                        imageUrl: upsell.image,
-                                                        size: upsell.size
-                                                    })}
-                                                    className="w-full mt-2 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest bg-surface hover:bg-foreground hover:text-background border border-border transition-colors flex justify-center items-center gap-1 text-foreground"
-                                                >
-                                                    <Plus className="w-3 h-3" /> AGREGAR
-                                                </button>
-                                            </div>
-                                        ))}
+                                                        <button
+                                                            onClick={() =>
+                                                                addItem({
+                                                                    productId: upsell.id,
+                                                                    productName: upsell.name,
+                                                                    productSlug: upsell.slug,
+                                                                    unitPrice: upsell.price,
+                                                                    imageUrl: upsell.imageUrl,
+                                                                    size: upsell.defaultSize,
+                                                                })
+                                                            }
+                                                            className="w-full mt-2 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest bg-surface hover:bg-foreground hover:text-background border border-border transition-colors flex justify-center items-center gap-1 text-foreground"
+                                                        >
+                                                            <Plus className="w-3 h-3" /> AGREGAR
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                        </div>
                                     </div>
-                                </div>
+                                )}
 
                                 {/* Footer con total y CTA */}
                                 <div className="p-6 border-t border-border bg-surface">

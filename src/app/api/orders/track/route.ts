@@ -45,13 +45,31 @@ export async function POST(req: NextRequest) {
 
     const supabase = createServiceRoleClient() as any
 
-    const { data: order, error } = await supabase
+    const TIMEOUT_MS = 10000
+    const queryPromise = supabase
       .from('orders')
       .select('*, order_items(*, products(product_images(image_url)))')
       .eq('order_number', trimmedOrder)
       .single()
 
-    if (error || !order) {
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Tiempo de espera agotado')), TIMEOUT_MS)
+    )
+
+    let order: unknown = null
+    let err: { message?: string } | null = null
+    try {
+      const result = await Promise.race([queryPromise, timeoutPromise]) as { data: unknown; error: { message?: string } | null }
+      order = result.data
+      err = result.error
+    } catch (e) {
+      return NextResponse.json(
+        { error: e instanceof Error ? e.message : 'Error al consultar el pedido' },
+        { status: 502 }
+      )
+    }
+
+    if (err || !order) {
       return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 })
     }
 
