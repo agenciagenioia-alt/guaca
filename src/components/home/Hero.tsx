@@ -192,8 +192,8 @@ export function Hero({ heroImageUrl, heroVideoUrl }: HeroProps) {
         aria-hidden="true"
       />
 
-      {/* Main Content — mobile: más padding y tipografía que quepa sin cortarse */}
-      <div className="relative z-10 flex flex-col items-start justify-center w-full max-w-[1400px] mx-auto px-5 sm:px-6 lg:px-12 pointer-events-none md:w-[60%]">
+      {/* Main Content — mobile: alineado a la izquierda para que las 3 secciones se vean mejor */}
+      <div className="relative z-10 flex flex-col items-start justify-center w-full max-w-[1400px] mx-auto pl-5 pr-2 sm:pl-6 sm:pr-4 lg:px-12 pointer-events-none md:w-[60%]">
 
         {/* Typographic Lockup — mobile: tamaño reducido para que LA + GUACA no se corten */}
         <div className="flex flex-col relative w-full max-w-[100%] overflow-hidden md:overflow-visible pointer-events-auto z-20">

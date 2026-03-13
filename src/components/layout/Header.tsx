@@ -19,6 +19,8 @@ export function Header() {
     const [mounted, setMounted] = useState(false)
     const [isVisible, setIsVisible] = useState(true)
     const [lastScrollY, setLastScrollY] = useState(0)
+    const [scrollY, setScrollY] = useState(0)
+    const [isMobile, setIsMobile] = useState(false)
     const [addedId, setAddedId] = useState<number>(0)
     const [categoryLinks, setCategoryLinks] = useState<NavLink[]>([])
     const [staticLinks] = useState<NavLink[]>([
@@ -90,20 +92,35 @@ export function Header() {
         setAddedId(prev => prev + 1)
     }, [items, mounted])
 
-    // Intelligent Header Scroll Logic
+    // Detección móvil
+    useEffect(() => {
+        const mql = window.matchMedia('(max-width: 767px)')
+        const onMatch = () => setIsMobile(mql.matches)
+        onMatch()
+        mql.addEventListener('change', onMatch)
+        return () => mql.removeEventListener('change', onMatch)
+    }, [])
+
+    // Intelligent Header Scroll Logic — en móvil: primero la barra baja un poco, luego se esconde
     useEffect(() => {
         const handleScroll = () => {
             const currentScrollY = window.scrollY
+            setScrollY(currentScrollY)
 
-            // Si el menú móvil está abierto, no esconder el header
             if (menuOpen) return
 
-            if (currentScrollY > lastScrollY && currentScrollY > 100) {
-                // Scrolling down & past 100px -> hide
-                setIsVisible(false)
+            if (isMobile) {
+                // Móvil: al bajar scroll primero la barra "baja" un poco (efecto), luego se esconde
+                if (currentScrollY < lastScrollY) {
+                    // Scroll up → mostrar
+                    setIsVisible(true)
+                } else if (currentScrollY > 100) {
+                    // Scroll down y pasamos 100px → esconder
+                    setIsVisible(false)
+                }
             } else {
-                // Scrolling up -> show
-                setIsVisible(true)
+                if (currentScrollY > lastScrollY && currentScrollY > 100) setIsVisible(false)
+                else setIsVisible(true)
             }
 
             setLastScrollY(currentScrollY)
@@ -111,14 +128,23 @@ export function Header() {
 
         window.addEventListener('scroll', handleScroll, { passive: true })
         return () => window.removeEventListener('scroll', handleScroll)
-    }, [lastScrollY, menuOpen])
+    }, [lastScrollY, menuOpen, isMobile])
 
     const itemCount = mounted ? totalItems() : 0
     const wishlistCount = mounted ? wishlistItems.length : 0
 
+    // En móvil: efecto "bajar un poco" al hacer scroll (max 24px) y luego esconder
+    const headerTransform = isMobile
+        ? (!isVisible ? 'translateY(-100%)' : `translateY(${-Math.min(scrollY * 0.35, 24)}px)`)
+        : undefined
+    const headerClass = !isMobile
+        ? `sticky top-0 z-40 bg-[var(--color-background)]/90 backdrop-blur-[24px] saturate-[180%] border-b border-border transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`
+        : `sticky top-0 z-40 bg-[var(--color-background)]/90 backdrop-blur-[24px] saturate-[180%] border-b border-border transition-transform duration-200`
+
     return (
         <header
-            className={`sticky top-0 z-40 bg-[var(--color-background)]/90 backdrop-blur-[24px] saturate-[180%] border-b border-border transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
+            className={headerClass}
+            style={headerTransform != null ? { transform: headerTransform } : undefined}
         >
             <div className="max-w-[1400px] mx-auto relative flex items-center justify-between h-16 md:h-20 pl-4 pr-4 sm:pl-6 sm:pr-6 md:px-6 lg:px-12">
 
@@ -273,7 +299,7 @@ export function Header() {
                 className={`fixed inset-0 min-h-screen bg-background z-40 flex flex-col items-center justify-center transition-opacity duration-300 md:hidden ${menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             >
                 <nav
-                    className="relative z-10 w-full px-8 flex flex-col items-center text-center gap-5"
+                    className="relative z-10 w-full px-6 flex flex-col items-center text-center gap-4"
                     aria-label="Navegación principal móvil"
                 >
                     {allNavLinks.map((link) => (
@@ -281,7 +307,7 @@ export function Header() {
                             key={link.href}
                             href={link.href}
                             onClick={() => setMenuOpen(false)}
-                            className="text-2xl font-heading tracking-[0.25em] text-foreground-muted hover:text-foreground transition-colors duration-200"
+                            className="text-base font-heading tracking-[0.2em] text-foreground-muted hover:text-foreground transition-colors duration-200"
                         >
                             {link.label}
                         </Link>
