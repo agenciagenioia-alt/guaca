@@ -64,11 +64,11 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
   }, [isMobile])
 
   return (
-    <section ref={containerRef} className="relative w-full h-screen md:h-[280vh]">
+    <section ref={containerRef} className="relative w-full h-[80vh] md:h-[280vh]">
       {/* The sticky container that locks into the viewport */}
       <div className="sticky top-0 w-full h-screen overflow-hidden flex flex-col items-center justify-end pb-[8vh]">
         
-        {/* Video background or fallback — mobile: object-center para encuadre centrado */}
+        {/* Video background or fallback — mobile: object-contain para no cortar el video */}
         {videoUrl ? (
           <div className="absolute inset-0 w-full h-full">
             <video
@@ -76,7 +76,7 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              className="absolute inset-0 w-full h-full object-contain md:object-cover object-center bg-black"
             >
               <source src={videoUrl} type="video/mp4" />
             </video>

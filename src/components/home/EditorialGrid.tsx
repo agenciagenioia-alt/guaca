@@ -48,9 +48,10 @@ export function EditorialGrid({ products }: EditorialGridProps) {
         </div>
       </div>
 
+      {/* Desktop / tablet: carrusel horizontal */}
       <div 
         ref={scrollRef}
-        className="flex gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 -mx-6 px-6 lg:-mx-12 lg:px-12 [&::-webkit-scrollbar]:hidden"
+        className="hidden md:flex gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 -mx-6 px-6 lg:-mx-12 lg:px-12 [&::-webkit-scrollbar]:hidden"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {products.map((product) => (
@@ -63,14 +64,13 @@ export function EditorialGrid({ products }: EditorialGridProps) {
         ))}
       </div>
       
-      {/* Mobile Arrow Controls */}
-      <div className="flex md:hidden items-center justify-center gap-4 mt-2">
-        <button onClick={() => scroll('left')} className="p-3 border border-border rounded-none hover:bg-surface hover:text-foreground transition-colors text-foreground-muted">
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <button onClick={() => scroll('right')} className="p-3 border border-border rounded-none hover:bg-surface hover:text-foreground transition-colors text-foreground-muted">
-          <ChevronRight className="w-5 h-5" />
-        </button>
+      {/* Mobile: grid 2xN (todas las cards en scroll vertical) */}
+      <div className="grid grid-cols-2 gap-4 md:hidden">
+        {products.map((product, index) => (
+          <div key={product.id} className="w-full">
+            <ProductCard product={product} index={index} />
+          </div>
+        ))}
       </div>
     </div>
   )

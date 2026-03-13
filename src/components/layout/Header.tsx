@@ -120,14 +120,14 @@ export function Header() {
         <header
             className={`sticky top-0 z-40 bg-[var(--color-background)]/90 backdrop-blur-[24px] saturate-[180%] border-b border-border transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
         >
-            <div className="max-w-[1400px] mx-auto flex items-center justify-between h-16 md:h-20 px-6 lg:px-12">
+            <div className="max-w-[1400px] mx-auto flex items-center justify-between h-16 md:h-20 px-4 sm:px-6 lg:px-12">
 
-                {/* Logo & Desktop Nav grouped intentionally to change order on mobile */}
-                <div className="flex items-center gap-12">
+                {/* Logo & Desktop Nav grouped. En mobile el logo queda centrado, en desktop a la izquierda con el menú. */}
+                <div className="flex items-center gap-12 flex-1">
                     {/* Logo */}
                     <Link
                         href="/"
-                        className="font-heading text-[14px] tracking-[0.15em] text-foreground hover:text-foreground/80 transition-opacity uppercase font-bold"
+                        className="font-heading text-[14px] tracking-[0.15em] text-foreground hover:text-foreground/80 transition-opacity uppercase font-bold w-full text-center md:w-auto md:text-left"
                         aria-label="La Guaca — Ir al inicio"
                         onClick={() => setMenuOpen(false)}
                     >
@@ -216,7 +216,7 @@ export function Header() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 md:gap-4">
+                <div className="flex items-center gap-2 md:gap-4 ml-auto">
 
                     {/* Wishlist Button */}
                     <Link
@@ -274,7 +274,7 @@ export function Header() {
                 className={`fixed inset-0 min-h-screen bg-background z-40 flex flex-col items-center justify-center transition-opacity duration-300 md:hidden ${menuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
             >
                 <nav
-                    className="relative z-10 w-full px-6 flex flex-col items-center text-center gap-8"
+                    className="relative z-10 w-full px-8 flex flex-col items-center text-center gap-5"
                     aria-label="Navegación principal móvil"
                 >
                     {allNavLinks.map((link) => (
@@ -282,7 +282,7 @@ export function Header() {
                             key={link.href}
                             href={link.href}
                             onClick={() => setMenuOpen(false)}
-                            className="text-4xl font-heading tracking-widest text-foreground-muted hover:text-foreground hover:scale-110 transition-all duration-300"
+                            className="text-2xl font-heading tracking-[0.25em] text-foreground-muted hover:text-foreground transition-colors duration-200"
                         >
                             {link.label}
                         </Link>

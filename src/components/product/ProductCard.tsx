@@ -138,7 +138,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                         originalPrice: product.original_price ?? undefined,
                         imageUrl: primaryUrl
                     }}
-                    className="top-3 right-3 w-8 h-8 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 !bg-white/90 hover:!bg-white shadow-lg"
+                    className="top-3 right-3 w-8 h-8 z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 !bg-white/90 hover:!bg-white shadow-lg"
                 />
 
                 {/* AGOTADO */}

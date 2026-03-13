@@ -73,8 +73,27 @@ export function UGCMasonry() {
           </a>
         </div>
 
-        {/* CSS Grid Asimétrico Estricto con Cards "Paspartú" */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-center">
+        {/* Mobile: grid simple 2x2, imágenes a color */}
+        <div className="grid grid-cols-2 gap-4 md:hidden">
+          {[img1, img2, img3, img4].filter(Boolean).map((src, idx) => (
+            <div
+              key={idx}
+              className="relative w-full aspect-[3/4] bg-[#1A1A18] overflow-hidden cursor-pointer"
+              onClick={() => setSelectedImage(src as string)}
+            >
+              <Image
+                src={src as string}
+                alt={images[idx]?.alt_text || 'Galería La Guaca'}
+                fill
+                className="object-cover"
+                sizes="50vw"
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: CSS Grid Asimétrico Estricto con Cards "Paspartú" */}
+        <div className="hidden md:grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-center">
           
           {/* Bloque Izquierdo (Imagen Principal Vertical) */}
           {img1 && (
