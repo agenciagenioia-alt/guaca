@@ -76,18 +76,19 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
           }}
         />
 
-        {/* Video como el banner de abajo: mismo tamaño 60vh, ancho completo, object-contain para no cortar palabras */}
-        <div className="relative w-full h-[60vh] flex-shrink-0 overflow-hidden bg-black">
+        {/* Video grande como en PC (75vh), object-cover + object-position para ocultar marca de agua "Veo" abajo-derecha */}
+        <div className="relative w-full min-h-[75vh] flex-shrink-0 overflow-hidden bg-black">
           <video
             autoPlay
             loop
             muted
             playsInline
-            className="absolute inset-0 w-full h-full object-contain object-center"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: 'center 22%' }}
           >
             <source src={videoUrl} type="video/mp4" />
           </video>
-          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-[#0a0a0a]/80" />
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-[#0a0a0a]/90" />
         </div>
 
         <div className="relative flex-1 flex flex-col justify-center min-h-0 pt-6 pb-24 px-5 text-center z-10">
