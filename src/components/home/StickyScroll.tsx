@@ -76,30 +76,31 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
           }}
         />
 
-        {/* Video al formato de la sección: ancho completo, 16/9 para mobile */}
-        <div className="relative w-full aspect-[16/9] flex-shrink-0 overflow-hidden">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: '42% 28%' }}
-          >
-            <source src={videoUrl} type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/20 to-transparent" />
+        {/* Video: altura controlada en móvil para que el texto no quede tapado, bordes redondeados */}
+        <div className="relative w-full flex-shrink-0 px-3 pt-3">
+          <div className="relative w-full aspect-[16/9] max-h-[40vh] overflow-hidden rounded-xl bg-black mx-auto">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ objectPosition: 'center 32%' }}
+            >
+              <source src={videoUrl} type="video/mp4" />
+            </video>
+            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-black/25 via-transparent to-transparent" />
+          </div>
         </div>
 
-        <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-[#0a0a0a] via-transparent pt-[56.25%]" />
-        <div className="relative flex-1 flex flex-col justify-end min-h-0 pb-10 pt-6 px-6 text-center z-10">
-          <div className="mb-4">
+        <div className="relative flex-1 flex flex-col justify-center min-h-0 pt-6 pb-24 px-5 text-center z-10">
+          <div className="space-y-2">
             {phase === 0 && (
               <>
-                <h3 className="font-heading text-4xl text-[#E8E6E1] uppercase tracking-[0.25em]">
+                <h3 className="font-heading text-3xl sm:text-4xl text-[#E8E6E1] uppercase tracking-[0.2em]">
                   Cultura
                 </h3>
-                <p className="mt-3 font-mono text-xs text-[#E8E6E1]/70 tracking-[0.15em] uppercase max-w-xs mx-auto">
+                <p className="mt-2 font-mono text-[11px] text-[#E8E6E1]/75 tracking-[0.12em] uppercase max-w-[280px] mx-auto leading-relaxed">
                   No vendemos ropa. Entregamos las herramientas para que construyas tu propia identidad.
                 </p>
               </>
@@ -107,22 +108,22 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
             {phase === 1 && (
               <>
                 <h3
-                  className="font-heading text-4xl text-transparent uppercase tracking-[0.25em]"
+                  className="font-heading text-3xl sm:text-4xl text-transparent uppercase tracking-[0.2em]"
                   style={{ WebkitTextStroke: '2px #E8E6E1' }}
                 >
                   Calidad
                 </h3>
-                <p className="mt-3 font-mono text-xs text-[#E8E6E1]/70 tracking-[0.15em] uppercase max-w-xs mx-auto">
+                <p className="mt-2 font-mono text-[11px] text-[#E8E6E1]/75 tracking-[0.12em] uppercase max-w-[280px] mx-auto leading-relaxed">
                   Seleccionamos piezas premium de marcas que dictan las reglas en el streetwear global.
                 </p>
               </>
             )}
             {phase === 2 && (
               <>
-                <h3 className="font-heading text-4xl text-[#E8E6E1] uppercase tracking-[0.25em]">
+                <h3 className="font-heading text-3xl sm:text-4xl text-[#E8E6E1] uppercase tracking-[0.2em]">
                   Exclusividad
                 </h3>
-                <p className="mt-3 font-mono text-xs text-[#E8E6E1]/70 tracking-[0.15em] uppercase max-w-xs mx-auto">
+                <p className="mt-2 font-mono text-[11px] text-[#E8E6E1]/75 tracking-[0.12em] uppercase max-w-[300px] mx-auto leading-relaxed">
                   Cantidades limitadas. Cuando un drop se va, se fue para siempre. Esto es La Guaca.
                 </p>
               </>
