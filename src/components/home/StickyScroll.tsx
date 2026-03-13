@@ -84,7 +84,7 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
             muted
             playsInline
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: 'center 28%' }}
+            style={{ objectPosition: '28% 28%' }}
           >
             <source src={videoUrl} type="video/mp4" />
           </video>
