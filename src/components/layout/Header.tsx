@@ -101,29 +101,37 @@ export function Header() {
         return () => mql.removeEventListener('change', onMatch)
     }, [])
 
-    // Intelligent Header Scroll Logic — en móvil: primero la barra baja un poco, luego se esconde
+    // Intelligent Header Scroll Logic — en móvil: la barra baja con el scroll (efecto) y luego se esconde
     useEffect(() => {
+        let ticking = false
         const handleScroll = () => {
-            const currentScrollY = window.scrollY
-            setScrollY(currentScrollY)
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const currentScrollY = window.scrollY
+                    setScrollY(currentScrollY)
 
-            if (menuOpen) return
+                    if (menuOpen) {
+                        ticking = false
+                        return
+                    }
 
-            if (isMobile) {
-                // Móvil: al bajar scroll primero la barra "baja" un poco (efecto), luego se esconde
-                if (currentScrollY < lastScrollY) {
-                    // Scroll up → mostrar
-                    setIsVisible(true)
-                } else if (currentScrollY > 100) {
-                    // Scroll down y pasamos 100px → esconder
-                    setIsVisible(false)
-                }
-            } else {
-                if (currentScrollY > lastScrollY && currentScrollY > 100) setIsVisible(false)
-                else setIsVisible(true)
+                    if (isMobile) {
+                        // Móvil: scroll down → barra baja un poco (efecto), tras ~80px se esconde
+                        if (currentScrollY < lastScrollY) {
+                            setIsVisible(true)
+                        } else if (currentScrollY > 80) {
+                            setIsVisible(false)
+                        }
+                    } else {
+                        if (currentScrollY > lastScrollY && currentScrollY > 100) setIsVisible(false)
+                        else setIsVisible(true)
+                    }
+
+                    setLastScrollY(currentScrollY)
+                    ticking = false
+                })
+                ticking = true
             }
-
-            setLastScrollY(currentScrollY)
         }
 
         window.addEventListener('scroll', handleScroll, { passive: true })
@@ -133,9 +141,10 @@ export function Header() {
     const itemCount = mounted ? totalItems() : 0
     const wishlistCount = mounted ? wishlistItems.length : 0
 
-    // En móvil: efecto "bajar un poco" al hacer scroll (max 24px) y luego esconder
+    // En móvil: 1) La barra BAJA (translateY positivo) siguiendo el scroll. 2) Luego se esconde hacia abajo (100%).
+    const mobileOffsetPx = Math.min(scrollY * 0.6, 48)
     const headerTransform = isMobile
-        ? (!isVisible ? 'translateY(-100%)' : `translateY(${-Math.min(scrollY * 0.35, 24)}px)`)
+        ? (!isVisible ? 'translateY(100%)' : `translateY(${mobileOffsetPx}px)`)
         : undefined
     const headerClass = !isMobile
         ? `sticky top-0 z-40 bg-[var(--color-background)]/90 backdrop-blur-[24px] saturate-[180%] border-b border-border transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`
