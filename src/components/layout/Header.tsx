@@ -120,10 +120,62 @@ export function Header() {
         <header
             className={`sticky top-0 z-40 bg-[var(--color-background)]/90 backdrop-blur-[24px] saturate-[180%] border-b border-border transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
         >
-            <div className="max-w-[1400px] mx-auto relative flex items-center justify-between h-16 md:h-20 pl-4 pr-1 sm:pl-6 sm:pr-2 md:px-6 lg:px-12">
+            <div className="max-w-[1400px] mx-auto relative flex items-center justify-between h-16 md:h-20 pl-4 pr-4 sm:pl-6 sm:pr-6 md:px-6 lg:px-12">
 
-                {/* En mobile: logo centrado con position absolute. En desktop: logo + nav a la izquierda. */}
-                <div className="flex items-center gap-12 flex-1 min-w-0 md:min-w-0">
+                {/* Mobile: iconos a la izquierda (order-1). Desktop: logo+nav a la izquierda (order-1). */}
+                <div className="relative z-10 flex items-center gap-1 sm:gap-2 md:gap-4 order-1 md:order-2 md:ml-auto shrink-0">
+                    {/* Wishlist Button */}
+                    <Link
+                        href="/favoritos"
+                        className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-hover transition-colors"
+                        aria-label={`Ver favoritos${wishlistCount > 0 ? `, ${wishlistCount} guardados` : ''}`}
+                    >
+                        <Heart className="w-[18px] h-[18px] text-foreground" aria-hidden="true" strokeWidth={1.5} />
+                        {wishlistCount > 0 && (
+                            <span
+                                className="absolute -top-1 -right-1 bg-foreground text-background text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full"
+                                aria-hidden="true"
+                            >
+                                {wishlistCount > 9 ? '9+' : wishlistCount}
+                            </span>
+                        )}
+                    </Link>
+
+                    {/* Cart button */}
+                    <button
+                        onClick={openCart}
+                        key={addedId}
+                        className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-hover transition-all/10 transition-colors animate-[cart-bounce_400ms_ease-in-out]"
+                        aria-label={`Abrir carrito de compras${itemCount > 0 ? `, ${itemCount} artículos` : ''}`}
+                    >
+                        <ShoppingBag className="w-[18px] h-[18px] text-foreground" aria-hidden="true" strokeWidth={1.5} />
+                        {itemCount > 0 && (
+                            <span
+                                className="absolute -top-1 -right-1 bg-foreground text-background text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full"
+                                aria-hidden="true"
+                            >
+                                {itemCount > 9 ? '9+' : itemCount}
+                            </span>
+                        )}
+                    </button>
+
+                    {/* Mobile menu button */}
+                    <button
+                        onClick={() => setMenuOpen(!menuOpen)}
+                        className="flex md:hidden items-center justify-center w-10 h-10 rounded-full hover:bg-surface-hover transition-all/10 transition-colors relative z-50 text-foreground"
+                        aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú de navegación'}
+                        aria-expanded={menuOpen}
+                    >
+                        {menuOpen ? (
+                            <X className="w-5 h-5" aria-hidden="true" strokeWidth={1.5} />
+                        ) : (
+                            <Menu className="w-5 h-5" aria-hidden="true" strokeWidth={1.5} />
+                        )}
+                    </button>
+                </div>
+
+                {/* En mobile: logo centrado (absolute). En desktop: logo + nav a la izquierda. */}
+                <div className="flex items-center gap-12 flex-1 min-w-0 order-2 md:order-1">
                     {/* Logo: en mobile centrado (absolute), en desktop en flujo normal */}
                     <Link
                         href="/"
@@ -213,59 +265,6 @@ export function Header() {
                             NOSOTROS
                         </Link>
                     </nav>
-                </div>
-
-                {/* Actions: en mobile pegados a la derecha; en desktop ml-auto */}
-                <div className="relative z-10 flex items-center gap-1 sm:gap-2 md:gap-4 ml-auto shrink-0">
-
-                    {/* Wishlist Button */}
-                    <Link
-                        href="/favoritos"
-                        className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-hover transition-colors"
-                        aria-label={`Ver favoritos${wishlistCount > 0 ? `, ${wishlistCount} guardados` : ''}`}
-                    >
-                        <Heart className="w-[18px] h-[18px] text-foreground" aria-hidden="true" strokeWidth={1.5} />
-                        {wishlistCount > 0 && (
-                            <span
-                                className="absolute -top-1 -right-1 bg-foreground text-background text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full"
-                                aria-hidden="true"
-                            >
-                                {wishlistCount > 9 ? '9+' : wishlistCount}
-                            </span>
-                        )}
-                    </Link>
-
-                    {/* Cart button */}
-                    <button
-                        onClick={openCart}
-                        key={addedId} // Forcing re-render to trigger animation
-                        className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-hover transition-all/10 transition-colors animate-[cart-bounce_400ms_ease-in-out]"
-                        aria-label={`Abrir carrito de compras${itemCount > 0 ? `, ${itemCount} artículos` : ''}`}
-                    >
-                        <ShoppingBag className="w-[18px] h-[18px] text-foreground" aria-hidden="true" strokeWidth={1.5} />
-                        {itemCount > 0 && (
-                            <span
-                                className="absolute -top-1 -right-1 bg-foreground text-background text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full"
-                                aria-hidden="true"
-                            >
-                                {itemCount > 9 ? '9+' : itemCount}
-                            </span>
-                        )}
-                    </button>
-
-                    {/* Mobile menu button */}
-                    <button
-                        onClick={() => setMenuOpen(!menuOpen)}
-                        className="flex md:hidden items-center justify-center w-10 h-10 rounded-full hover:bg-surface-hover transition-all/10 transition-colors relative z-50 text-foreground"
-                        aria-label={menuOpen ? 'Cerrar menú' : 'Abrir menú de navegación'}
-                        aria-expanded={menuOpen}
-                    >
-                        {menuOpen ? (
-                            <X className="w-5 h-5" aria-hidden="true" strokeWidth={1.5} />
-                        ) : (
-                            <Menu className="w-5 h-5" aria-hidden="true" strokeWidth={1.5} />
-                        )}
-                    </button>
                 </div>
             </div>
 
