@@ -123,25 +123,29 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Error guardando items del pedido' }, { status: 500 })
     }
 
-    const amountInCents = total * 100
+    const amountInCents = Math.round(Number(total) * 100)
     const currency = 'COP'
 
-    const { data: config } = await supabase
-      .from('store_config')
-      .select('wompi_public_key, wompi_integrity_key')
-      .eq('id', 1)
-      .single()
-
-    const publicKey =
-      (config?.wompi_public_key as string | null)?.trim() ||
-      process.env.NEXT_PUBLIC_WOMPI_PUBLIC_KEY
-    const integrityKey =
-      (config?.wompi_integrity_key as string | null)?.trim() ||
-      process.env.WOMPI_INTEGRITY_KEY
+    // Priorizar variables de entorno (Vercel/producción); si no hay, usar store_config
+    const envPublic = process.env.NEXT_PUBLIC_WOMPI_PUBLIC_KEY?.trim()
+    const envIntegrity = process.env.WOMPI_INTEGRITY_KEY?.trim()
+    let publicKey = envPublic || null
+    let integrityKey = envIntegrity || null
+    if (!publicKey || !integrityKey) {
+      const { data: config } = await supabase
+        .from('store_config')
+        .select('wompi_public_key, wompi_integrity_key')
+        .eq('id', 1)
+        .single()
+      const cfg = config as { wompi_public_key?: string; wompi_integrity_key?: string } | null
+      if (!publicKey) publicKey = cfg?.wompi_public_key?.trim() || null
+      if (!integrityKey) integrityKey = cfg?.wompi_integrity_key?.trim() || null
+    }
 
     if (!publicKey || !integrityKey) {
-      return NextResponse.json({ error: 'Configuración de pago incompleta' }, { status: 500 })
+      return NextResponse.json({ error: 'Configuración de pago incompleta. Revisa NEXT_PUBLIC_WOMPI_PUBLIC_KEY y WOMPI_INTEGRITY_KEY en Vercel.' }, { status: 500 })
     }
+    // Firma Wompi: Reference + Amount (centavos) + Currency + IntegritySecret
     const signatureString = `${orderNumber}${amountInCents}${currency}${integrityKey}`
     const signature = crypto.createHash('sha256').update(signatureString).digest('hex')
 

@@ -66,11 +66,15 @@ export default function WompiButton({
 
   if (error) {
     return (
-      <div className="w-full text-center py-4">
-        <p className="text-red-400 text-sm mb-3">Error al cargar el widget de pago.</p>
+      <div className="w-full text-center py-4 space-y-3">
+        <p className="text-red-400 text-sm font-medium">No se pudo cargar el widget de pago.</p>
+        <p className="text-foreground-muted text-xs max-w-sm mx-auto">
+          Revisa que en Vercel (Variables de entorno) estén bien configuradas <strong>NEXT_PUBLIC_WOMPI_PUBLIC_KEY</strong> y <strong>WOMPI_INTEGRITY_KEY</strong> con las llaves que te da Wompi en Developers → Secrets for technical integration.
+        </p>
         <button
+          type="button"
           onClick={() => { setError(false); setReady(false) }}
-          className="text-foreground underline text-sm"
+          className="text-foreground underline text-sm hover:no-underline"
         >
           Reintentar
         </button>
