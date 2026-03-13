@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { formatCOP } from '@/lib/utils'
 import { useCartStore } from '@/store/cart'
-import { createClient } from '@/lib/supabase/client'
 import { Lock, CreditCard, ChevronLeft } from 'lucide-react'
 import WompiButton from '@/components/checkout/WompiButton'
 
@@ -21,7 +20,8 @@ const formatPhoneCol = (val: string) => {
 
 export default function CheckoutPage() {
     const router = useRouter()
-    const { items, totalPrice } = useCartStore()
+    const { items = [], totalPrice } = useCartStore()
+    const safeItems = Array.isArray(items) ? items : []
 
     const [mounted, setMounted] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -61,15 +61,12 @@ export default function CheckoutPage() {
                 }
             }
         }
-        if (items.length === 0) {
+        if (safeItems.length === 0) {
             router.push('/catalogo')
         }
-    }, [items, router])
+    }, [safeItems.length, router])
 
-    // Antes pre-rellenábamos desde la cuenta del usuario.
-    // Ahora mantenemos un checkout 100% invitado, sin necesidad de iniciar sesión.
-
-    if (!mounted || items.length === 0) return null
+    if (!mounted || safeItems.length === 0) return null
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const raw = e.target.value
@@ -124,12 +121,12 @@ export default function CheckoutPage() {
         setIsLoading(true)
 
         try {
-            const total = totalPrice()
+            const total = typeof totalPrice === 'function' ? totalPrice() : 0
             const res = await fetch('/api/checkout/crear-orden', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    items: items.map((item) => ({
+                    items: safeItems.map((item) => ({
                         productId: item.productId,
                         productName: item.productName,
                         imageUrl: item.imageUrl,
@@ -365,7 +362,7 @@ export default function CheckoutPage() {
                         </h3>
 
                         <ul className="flex flex-col gap-4 mb-8">
-                            {items.map(item => (
+                            {safeItems.map(item => (
                                 <li key={`${item.productId}-${item.size}`} className="flex gap-4 items-center">
                                     <div className="relative w-16 h-20 bg-background border border-border rounded-none shrink-0 border-l">
                                         <Image src={item.imageUrl} alt={item.productName} fill className="object-cover" sizes="64px" />
@@ -388,7 +385,7 @@ export default function CheckoutPage() {
                         <div className="flex flex-col gap-4 border-t border-border pt-6">
                             <div className="flex justify-between items-center text-[13px] text-foreground-muted font-mono uppercase">
                                 <span>Subtotal</span>
-                                <span className="text-foreground">{formatCOP(totalPrice())}</span>
+                                <span className="text-foreground">{formatCOP(typeof totalPrice === 'function' ? totalPrice() : 0)}</span>
                             </div>
                             <div className="flex justify-between items-center text-[13px] text-foreground-muted font-mono uppercase pb-6 border-b border-border">
                                 <span>Envío</span>
@@ -397,7 +394,7 @@ export default function CheckoutPage() {
 
                             <div className="flex justify-between items-center pt-2">
                                 <span className="text-foreground font-heading tracking-widest text-xl uppercase">Total a pagar</span>
-                                <span className="text-foreground font-bold text-2xl tracking-wide">{formatCOP(totalPrice())}</span>
+                                <span className="text-foreground font-bold text-2xl tracking-wide">{formatCOP(typeof totalPrice === 'function' ? totalPrice() : 0)}</span>
                             </div>
                         </div>
 
