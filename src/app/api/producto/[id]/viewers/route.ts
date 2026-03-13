@@ -19,7 +19,7 @@ export async function POST(
       )
     }
 
-    const supabase = await createClient()
+    const supabase = await createClient() as any
 
     await supabase.from('product_viewers').upsert(
       {
@@ -63,7 +63,7 @@ export async function GET(
       return NextResponse.json({ count: 0 }, { status: 400 })
     }
 
-    const supabase = await createClient()
+    const supabase = await createClient() as any
     const windowStart = new Date(Date.now() - VIEWER_WINDOW_MINUTES * 60 * 1000).toISOString()
 
     const { count, error } = await supabase

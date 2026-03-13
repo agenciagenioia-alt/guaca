@@ -77,11 +77,12 @@ export default async function ProductoPage({ params }: Props) {
 
     const related = relatedData as any[]
 
-    const { data: storeConfig } = await supabase
+    const { data: storeConfigData } = await supabase
         .from('store_config')
         .select('sold_out_message, sold_out_whatsapp_message, owner_whatsapp, shipping_returns_text')
         .eq('id', 1)
         .single()
+    const storeConfig = storeConfigData as { sold_out_message?: string | null; sold_out_whatsapp_message?: string | null; owner_whatsapp?: string | null; shipping_returns_text?: string | null } | null
 
     const sortedImages = [...(product.images || [])].sort(
         (a, b) => a.display_order - b.display_order

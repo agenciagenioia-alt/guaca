@@ -33,9 +33,11 @@ const statusLabels: Record<string, string> = {
   cancelado: 'Cancelado',
 }
 
+type AuthUser = { id: string; email?: string; user_metadata?: { full_name?: string } }
+
 export default function MiCuentaPage() {
-  // La sección Mi Cuenta ya no está enlazada en la interfaz.
-  // Si en el futuro se reactiva el sistema de usuarios, aquí se puede volver a conectar useAuth.
+  const [user, setUser] = useState<AuthUser | null>(null)
+  const [authLoading, setAuthLoading] = useState(true)
   const [section, setSection] = useState<Section>('pedidos')
   const [orders, setOrders] = useState<(Order & { order_items?: OrderItemWithProduct[] })[]>([])
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -60,6 +62,13 @@ export default function MiCuentaPage() {
 
   const supabase = createClient()
   const ownerWhatsapp = process.env.NEXT_PUBLIC_OWNER_WHATSAPP || '573001234567'
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user: u } }) => {
+      setUser(u ?? null)
+      setAuthLoading(false)
+    })
+  }, [supabase])
 
   useEffect(() => {
     if (!user) return
@@ -208,7 +217,7 @@ export default function MiCuentaPage() {
             ))}
             <button
               type="button"
-              onClick={() => signOut()}
+              onClick={() => supabase.auth.signOut().then(() => window.location.href = '/')}
               className="w-full flex items-center gap-3 px-4 py-3 rounded text-left text-error hover:bg-error/10 transition-colors mt-2"
             >
               <Lock className="w-5 h-5 shrink-0" />

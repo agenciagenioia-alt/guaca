@@ -61,7 +61,7 @@ export default function EditarProductoPage() {
     reset,
     formState: { errors },
   } = useForm<ProductForm>({
-    resolver: zodResolver(productSchema),
+    resolver: zodResolver(productSchema) as any,
     defaultValues: {
       name: '',
       description: '',
@@ -174,7 +174,7 @@ export default function EditarProductoPage() {
     setSubmitting(true)
     const supabase = createClient()
     try {
-      const { error: updateError } = await supabase
+      const { error: updateError } = await (supabase as any)
         .from('products')
         .update({
           name: data.name,
@@ -187,7 +187,7 @@ export default function EditarProductoPage() {
           is_active: data.is_active,
           is_featured: data.is_featured,
           low_stock_alert: data.low_stock_alert,
-        } as any)
+        })
         .eq('id', id)
 
       if (updateError) throw updateError

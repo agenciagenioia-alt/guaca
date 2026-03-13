@@ -8,7 +8,7 @@ const SECURITY_HEADERS: [string, string][] = [
     ['Permissions-Policy', 'camera=(), microphone=(), geolocation=()'],
 ]
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const response = await updateSession(request)
     SECURITY_HEADERS.forEach(([key, value]) => {
         response.headers.set(key, value)
@@ -18,13 +18,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        /*
-         * Aplicar a todas las rutas excepto:
-         * - _next/static (archivos estáticos)
-         * - _next/image (optimización de imágenes)
-         * - favicon.ico
-         * - Archivos públicos (svg, png, jpg, etc.)
-         */
         '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }
