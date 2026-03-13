@@ -77,14 +77,14 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
         />
 
         {/* Video minimizado: recuadro centrado para ocultar marca de agua y verse más completo */}
-        <div className="relative w-[92%] max-w-[420px] aspect-[9/16] rounded-lg overflow-hidden shadow-2xl ring-1 ring-white/10 flex-shrink-0">
+        <div className="relative w-[96%] max-w-[440px] aspect-[9/16] rounded-lg overflow-hidden shadow-2xl ring-1 ring-white/10 flex-shrink-0">
           <video
             autoPlay
             loop
             muted
             playsInline
             className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: '28% 28%' }}
+            style={{ objectPosition: '42% 28%' }}
           >
             <source src={videoUrl} type="video/mp4" />
           </video>
