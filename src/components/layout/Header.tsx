@@ -18,10 +18,11 @@ export function Header() {
     const [catDropdownOpen, setCatDropdownOpen] = useState(false)
     const [mounted, setMounted] = useState(false)
     const [isVisible, setIsVisible] = useState(true)
-    const [lastScrollY, setLastScrollY] = useState(0)
-    const [scrollY, setScrollY] = useState(0)
     const [isMobile, setIsMobile] = useState(false)
     const [addedId, setAddedId] = useState<number>(0)
+    const headerRef = useRef<HTMLElement>(null)
+    const lastScrollYRef = useRef(0)
+    const isVisibleRef = useRef(true)
     const [categoryLinks, setCategoryLinks] = useState<NavLink[]>([])
     const [staticLinks] = useState<NavLink[]>([
         { href: '/', label: 'INICIO' },
@@ -101,59 +102,77 @@ export function Header() {
         return () => mql.removeEventListener('change', onMatch)
     }, [])
 
-    // Intelligent Header Scroll Logic — en móvil: la barra baja con el scroll (efecto) y luego se esconde
+    isVisibleRef.current = isVisible
+
+    // En móvil: aplicar transform por ref (sin re-render) para evitar bug/glitch al hacer scroll
+    const applyMobileHeaderTransform = (scrollYVal: number, visible: boolean) => {
+        const el = headerRef.current
+        if (!el || !isMobile) return
+        if (!visible) {
+            el.style.transition = 'transform 0.25s ease-out'
+            el.style.transform = 'translateY(100%)'
+        } else {
+            el.style.transition = 'none'
+            const px = Math.min(scrollYVal * 0.6, 48)
+            el.style.transform = `translateY(${px}px)`
+        }
+    }
+
     useEffect(() => {
-        let ticking = false
+        if (!isMobile) return
+        applyMobileHeaderTransform(window.scrollY, isVisible)
+    }, [isMobile, isVisible])
+
+    useEffect(() => {
+        let rafId = 0
         const handleScroll = () => {
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    const currentScrollY = window.scrollY
-                    setScrollY(currentScrollY)
+            rafId = requestAnimationFrame(() => {
+                const currentScrollY = window.scrollY
+                const prevScrollY = lastScrollYRef.current
 
-                    if (menuOpen) {
-                        ticking = false
-                        return
+                if (menuOpen) {
+                    lastScrollYRef.current = currentScrollY
+                    return
+                }
+
+                if (isMobile) {
+                    let nextVisible = isVisibleRef.current
+                    if (currentScrollY < prevScrollY) nextVisible = true
+                    else if (currentScrollY > 80) nextVisible = false
+
+                    if (nextVisible !== isVisibleRef.current) {
+                        isVisibleRef.current = nextVisible
+                        setIsVisible(nextVisible)
                     }
+                    applyMobileHeaderTransform(currentScrollY, isVisibleRef.current)
+                } else {
+                    if (currentScrollY > prevScrollY && currentScrollY > 100) setIsVisible(false)
+                    else setIsVisible(true)
+                }
 
-                    if (isMobile) {
-                        // Móvil: scroll down → barra baja un poco (efecto), tras ~80px se esconde
-                        if (currentScrollY < lastScrollY) {
-                            setIsVisible(true)
-                        } else if (currentScrollY > 80) {
-                            setIsVisible(false)
-                        }
-                    } else {
-                        if (currentScrollY > lastScrollY && currentScrollY > 100) setIsVisible(false)
-                        else setIsVisible(true)
-                    }
-
-                    setLastScrollY(currentScrollY)
-                    ticking = false
-                })
-                ticking = true
-            }
+                lastScrollYRef.current = currentScrollY
+            })
         }
 
         window.addEventListener('scroll', handleScroll, { passive: true })
-        return () => window.removeEventListener('scroll', handleScroll)
-    }, [lastScrollY, menuOpen, isMobile])
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+            if (rafId) cancelAnimationFrame(rafId)
+        }
+    }, [menuOpen, isMobile])
 
     const itemCount = mounted ? totalItems() : 0
     const wishlistCount = mounted ? wishlistItems.length : 0
 
-    // En móvil: 1) La barra BAJA (translateY positivo) siguiendo el scroll. 2) Luego se esconde hacia abajo (100%).
-    const mobileOffsetPx = Math.min(scrollY * 0.6, 48)
-    const headerTransform = isMobile
-        ? (!isVisible ? 'translateY(100%)' : `translateY(${mobileOffsetPx}px)`)
-        : undefined
     const headerClass = !isMobile
         ? `sticky top-0 z-40 bg-[var(--color-background)]/90 backdrop-blur-[24px] saturate-[180%] border-b border-border transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`
-        : `sticky top-0 z-40 bg-[var(--color-background)]/90 backdrop-blur-[24px] saturate-[180%] border-b border-border transition-transform duration-200`
+        : `sticky top-0 z-40 bg-[var(--color-background)]/90 backdrop-blur-[24px] saturate-[180%] border-b border-border`
 
     return (
         <header
+            ref={headerRef}
             className={headerClass}
-            style={headerTransform != null ? { transform: headerTransform } : undefined}
+            style={!isMobile ? undefined : { willChange: 'transform' } as React.CSSProperties}
         >
             <div className="max-w-[1400px] mx-auto relative flex items-center justify-between h-16 md:h-20 pl-4 pr-4 sm:pl-6 sm:pr-6 md:px-6 lg:px-12">
 
