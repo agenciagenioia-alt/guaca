@@ -76,8 +76,8 @@ export function StickyScroll({ videoUrl }: StickyScrollProps) {
           }}
         />
 
-        {/* Video como el banner de abajo: ancho completo, buena altura, object-contain para no cortar palabras */}
-        <div className="relative w-full h-[55vh] flex-shrink-0 overflow-hidden bg-black">
+        {/* Video como el banner de abajo: mismo tamaño 60vh, ancho completo, object-contain para no cortar palabras */}
+        <div className="relative w-full h-[60vh] flex-shrink-0 overflow-hidden bg-black">
           <video
             autoPlay
             loop
