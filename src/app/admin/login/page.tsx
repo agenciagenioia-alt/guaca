@@ -5,19 +5,16 @@ import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 
 export default function AdminLoginPage() {
+  const [user, setUser] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
-  const urlError = searchParams?.get('error') ?? null
-  const displayError = error || urlError
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!password.trim()) {
-      setError('Ingresa la contraseña')
+    if (!user.trim() || !password) {
+      setError('Ingresa usuario y contraseña')
       return
     }
     setLoading(true)
@@ -26,11 +23,11 @@ export default function AdminLoginPage() {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: password.trim() }),
+        body: JSON.stringify({ user: user.trim(), password }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        setError(data.error || 'Contraseña incorrecta')
+        setError(data.error || 'Usuario o contraseña incorrectos')
         setLoading(false)
         return
       }
@@ -55,11 +52,28 @@ export default function AdminLoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-surface p-8 rounded-xl border border-border">
-          {displayError && (
+          {error && (
             <div className="bg-error/10 border border-error/50 text-error text-sm p-3 rounded-md" role="alert">
-              {displayError}
+              {error}
             </div>
           )}
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5" htmlFor="user">
+              Usuario
+            </label>
+            <input
+              id="user"
+              name="user"
+              type="text"
+              required
+              value={user}
+              onChange={(e) => setUser(e.target.value)}
+              className="w-full px-4 py-3 bg-background border border-border rounded-md text-foreground focus:border-[rgba(232,230,225,0.25)] transition-colors"
+              placeholder="Usuario o correo"
+              autoComplete="username"
+            />
+          </div>
 
           <div>
             <label className="block text-sm font-medium mb-1.5" htmlFor="password">

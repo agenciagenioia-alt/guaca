@@ -73,16 +73,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Pedido no encontrado' }, { status: 404 })
     }
 
+    const orderObj = order as { customer_phone?: string; customer_email?: string }
+
     // Validación suave por teléfono o email si el cliente los proporciona
     if (phoneDigits) {
-      const storedPhoneDigits = String(order.customer_phone ?? '').replace(/\D/g, '')
+      const storedPhoneDigits = String(orderObj.customer_phone ?? '').replace(/\D/g, '')
       if (storedPhoneDigits && storedPhoneDigits !== phoneDigits) {
         return NextResponse.json({ error: 'Los datos no coinciden con el pedido' }, { status: 403 })
       }
     }
 
     if (emailLower) {
-      const storedEmail = (order.customer_email ?? '').toLowerCase()
+      const storedEmail = (orderObj.customer_email ?? '').toLowerCase()
       if (storedEmail && storedEmail !== emailLower) {
         return NextResponse.json({ error: 'Los datos no coinciden con el pedido' }, { status: 403 })
       }
