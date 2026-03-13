@@ -13,15 +13,19 @@ export default async function StoreLayout({
 }: {
     children: React.ReactNode
 }) {
-    unstable_noStore() // Config (redes, WhatsApp, etc.) siempre fresco al cambiar en admin
-    const supabase = await createClient()
-    const { data: config } = await supabase
-        .from('store_config')
-        .select('*')
-        .eq('id', 1)
-        .single()
-        
-    const configData = config as any
+    unstable_noStore()
+    let configData: Record<string, unknown> | null = null
+    try {
+        const supabase = await createClient()
+        const { data: config } = await supabase
+            .from('store_config')
+            .select('*')
+            .eq('id', 1)
+            .single()
+        configData = config as Record<string, unknown> | null
+    } catch (e) {
+        console.error('[StoreLayout] Error loading config:', e)
+    }
 
     return (
         <>
@@ -29,14 +33,14 @@ export default async function StoreLayout({
             <Header />
             <main id="main-content">{children}</main>
             <Footer
-                instagramUrl={configData?.instagram_url}
-                tiktokUrl={configData?.tiktok_url}
-                whatsappUrl={configData?.whatsapp_url}
+                instagramUrl={configData?.instagram_url as string | null | undefined}
+                tiktokUrl={configData?.tiktok_url as string | null | undefined}
+                whatsappUrl={configData?.whatsapp_url as string | null | undefined}
             />
             <CartDrawer />
             <CartReminderBar />
             {configData?.owner_whatsapp && (
-                <WhatsAppFloat phone={configData.owner_whatsapp} />
+                <WhatsAppFloat phone={String(configData.owner_whatsapp)} />
             )}
             <ToastContainer />
         </>
