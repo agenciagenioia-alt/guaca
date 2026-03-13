@@ -84,6 +84,11 @@ function CatalogoContent() {
             setLoading(true)
             setError(null)
 
+            const timeoutMs = 15000
+            const timeoutPromise = new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('Tiempo de espera agotado. Revisa tu conexión.')), timeoutMs)
+            )
+
             const applyClientFilters = (rows: any[] | null) => {
                 let filtered = (rows || []) as any[]
 
@@ -138,7 +143,11 @@ function CatalogoContent() {
                     query = query.eq('categories.slug', selectedCategory)
                 }
 
-                const { data, error } = await query
+                const result = await Promise.race([
+                    query.then((r) => r),
+                    timeoutPromise,
+                ]) as { data: any; error: { message: string } | null }
+                const { data, error } = result
                 if (error) {
                     throw error
                 }

@@ -92,6 +92,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                             className={`object-cover transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                                 isHovered && secondaryUrl ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
                             }`}
+                            unoptimized={primaryUrl.includes('supabase.co')}
                         />
                     )}
 
@@ -105,6 +106,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                             className={`object-cover transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                                 isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
                             }`}
+                            unoptimized={secondaryUrl.includes('supabase.co')}
                         />
                     )}
                 </Link>
