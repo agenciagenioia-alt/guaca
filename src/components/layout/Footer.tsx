@@ -44,9 +44,21 @@ export function Footer({ instagramUrl, tiktokUrl, whatsappUrl }: FooterProps) {
                                 <br />Dictamos las reglas.
                             </p>
                         </div>
-                        <div className="mt-12 flex items-center gap-2 font-mono text-[10px] text-foreground-subtle tracking-[0.2em] uppercase">
-                            <MapPin className="w-3 h-3" />
-                            <span>8°45'36"N 75°53'08"W</span>
+                        <div className="mt-12 flex flex-col gap-2">
+                            <a
+                                href="https://www.google.com/maps/place/Boutique+La+Guaca/@8.765563,-75.8913527,17z/data=!3m1!4b1!4m6!3m5!1s0x8e5a2fa31ed2fe69:0x73d8ddf89702bd2f!8m2!3d8.7655577!4d-75.8864818!16s%2Fg%2F11h_6pp3x1?entry=ttu"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 font-mono text-[10px] text-foreground-subtle tracking-[0.2em] uppercase hover:text-foreground transition-colors w-fit"
+                                aria-label="Ver Boutique La Guaca en Google Maps"
+                            >
+                                <MapPin className="w-3 h-3 shrink-0" />
+                                <span>Ver en Google Maps</span>
+                            </a>
+                            <p className="flex items-center gap-2 font-mono text-[10px] text-foreground-subtle/80 tracking-[0.2em] uppercase">
+                                <MapPin className="w-3 h-3 shrink-0" />
+                                <span>8°45'36"N 75°53'08"W</span>
+                            </p>
                         </div>
                     </div>
 
@@ -111,7 +123,12 @@ export function Footer({ instagramUrl, tiktokUrl, whatsappUrl }: FooterProps) {
                             </div>
                         </div>
 
-                        <div className="mt-12 flex flex-col gap-2">
+                        <div className="mt-12 flex flex-col gap-3">
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                <Link href="/politica-de-privacidad" className="font-mono text-[10px] text-foreground-subtle tracking-widest uppercase hover:text-foreground transition-colors">
+                                    Política de privacidad
+                                </Link>
+                            </div>
                             <p className="font-mono text-[10px] text-foreground-subtle tracking-widest uppercase">
                                 © {new Date().getFullYear()} La Guaca.
                             </p>
