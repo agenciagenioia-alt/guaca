@@ -5,7 +5,7 @@ import Image from 'next/image'
 const STORE_IMAGE_PLACEHOLDER =
   'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=1600'
 const MAPS_URL =
-  'https://maps.google.com/?q=Calle+37+%231w-139+Montería+Colombia'
+  'https://www.google.com/maps/place/Boutique+La+Guaca/@8.765563,-75.8913527,17z/data=!3m1!4b1!4m6!3m5!1s0x8e5a2fa31ed2fe69:0x73d8ddf89702bd2f!8m2!3d8.7655577!4d-75.8864818!16s%2Fg%2F11h_6pp3x1?entry=ttu'
 
 interface StoreBannerProps {
   videoUrl?: string | null
