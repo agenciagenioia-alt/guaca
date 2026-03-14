@@ -202,82 +202,79 @@ function CatalogoContent() {
             </div>
 
             <div className="w-full flex flex-col md:flex-row relative">
-                {/* Mobile Fast Horizontal Filters (App-Like) */}
-                <div className="w-full md:hidden border-b border-border bg-background/95 backdrop-blur-[10px] sticky top-[60px] z-30 overflow-hidden">
-                    <div className="flex overflow-x-auto overflow-y-hidden snap-x scrollbar-hide px-4 py-3 gap-2 -webkit-overflow-scrolling-touch">
-                        <button
-                            onClick={() => updateFilter('categoria', '')}
-                            className={`shrink-0 snap-start px-5 py-2 text-[11px] font-mono tracking-widest uppercase rounded-full transition-all duration-300 ${!selectedCategory
-                                ? 'bg-foreground text-background font-bold'
-                                : 'bg-transparent border border-border text-foreground-muted hover:text-foreground'
-                                }`}
-                        >
-                            Todo
-                        </button>
-                        {categories.map((cat) => (
+                {/* Mobile: filtros en filas con scroll horizontal, sin que se corten */}
+                <div className="w-full md:hidden border-b border-border bg-background/98 sticky top-[60px] z-30">
+                    {/* Categorías */}
+                    <div className="pt-3 pb-2">
+                        <p className="px-4 mb-2 text-[10px] font-mono uppercase tracking-wider text-foreground-muted">Categoría</p>
+                        <div className="flex overflow-x-auto scrollbar-hide gap-2 pl-4 pr-4 pb-1 -webkit-overflow-scrolling-touch min-w-0" style={{ scrollPaddingInline: '1rem' }}>
                             <button
-                                key={cat.id}
-                                onClick={() => updateFilter('categoria', cat.slug)}
-                                className={`shrink-0 snap-start px-5 py-2 text-[11px] font-mono tracking-widest uppercase rounded-full transition-all duration-300 ${selectedCategory === cat.slug
-                                    ? 'bg-foreground text-background font-bold'
-                                    : 'bg-transparent border border-border text-foreground-muted hover:text-foreground'
-                                    }`}
+                                onClick={() => updateFilter('categoria', '')}
+                                className={`shrink-0 px-4 py-2.5 text-[11px] font-mono tracking-widest uppercase rounded-full transition-all ${!selectedCategory ? 'bg-foreground text-background font-bold' : 'bg-surface border border-border text-foreground-muted hover:text-foreground'}`}
                             >
-                                {cat.name}
+                                Todo
                             </button>
-                        ))}
-                    </div>
-                    {/* Tallas Mini Pills Mobile */}
-                    <div className="flex overflow-x-auto overflow-y-hidden snap-x scrollbar-hide px-4 pb-3 pt-1 gap-2 -webkit-overflow-scrolling-touch">
-                        <span className="shrink-0 flex items-center pr-2 text-[10px] font-mono uppercase text-foreground-subtle">Tallas:</span>
-                        {(sizesExpanded ? SIZES : SIZES.slice(0, SIZES_INITIAL_COUNT)).map((size) => (
-                            <button
-                                key={size}
-                                onClick={() => updateFilter('talla', selectedSize === size ? '' : size)}
-                                className={`shrink-0 snap-start px-4 h-[28px] flex items-center justify-center text-[11px] font-mono font-bold rounded-sm border transition-all duration-300 ${selectedSize === size
-                                    ? 'bg-foreground border-foreground text-background shadow-none'
-                                    : 'bg-surface border-border text-foreground-subtle hover:text-foreground'
-                                    }`}
-                            >
-                                {size}
-                            </button>
-                        ))}
-                        {SIZES.length > SIZES_INITIAL_COUNT && (
-                            <button
-                                type="button"
-                                onClick={() => setSizesExpanded((v) => !v)}
-                                className="shrink-0 snap-start px-3 h-[28px] flex items-center justify-center text-[10px] font-mono text-foreground-muted border border-border rounded-sm"
-                            >
-                                {sizesExpanded ? 'Menos' : 'Ver más'}
-                            </button>
-                        )}
-                    </div>
-                    {/* Marcas Mini Pills Mobile */}
-                    {brands.length > 0 && (
-                        <div className="flex overflow-x-auto overflow-y-hidden snap-x scrollbar-hide px-4 pb-3 pt-1 gap-2 -webkit-overflow-scrolling-touch">
-                            <span className="shrink-0 flex items-center pr-2 text-[10px] font-mono uppercase text-foreground-subtle">Marcas:</span>
-                            {brands.map((brand) => (
+                            {categories.map((cat) => (
                                 <button
-                                    key={brand.id}
-                                    onClick={() => {
-                                        const set = new Set(selectedBrands)
-                                        if (set.has(brand.slug)) {
-                                            set.delete(brand.slug)
-                                        } else {
-                                            set.add(brand.slug)
-                                        }
-                                        const value = Array.from(set).join(',')
-                                        updateFilter('marca', value)
-                                    }}
-                                    className={`shrink-0 snap-start px-4 h-[28px] flex items-center justify-center text-[11px] font-mono font-bold rounded-sm border transition-all duration-300 ${
-                                        selectedBrands.includes(brand.slug)
-                                            ? 'bg-foreground border-foreground text-background shadow-none'
-                                            : 'bg-surface border-border text-foreground-subtle hover:text-foreground'
-                                    }`}
+                                    key={cat.id}
+                                    onClick={() => updateFilter('categoria', cat.slug)}
+                                    className={`shrink-0 px-4 py-2.5 text-[11px] font-mono tracking-widest uppercase rounded-full transition-all ${selectedCategory === cat.slug ? 'bg-foreground text-background font-bold' : 'bg-surface border border-border text-foreground-muted hover:text-foreground'}`}
                                 >
-                                    {brand.name}
+                                    {cat.name}
                                 </button>
                             ))}
+                            <span className="shrink-0 w-2" aria-hidden />
+                        </div>
+                    </div>
+                    {/* Tallas */}
+                    <div className="pb-2">
+                        <p className="px-4 mb-2 text-[10px] font-mono uppercase tracking-wider text-foreground-muted">Talla</p>
+                        <div className="flex overflow-x-auto scrollbar-hide gap-2 pl-4 pr-4 pb-1 -webkit-overflow-scrolling-touch min-w-0">
+                            {(sizesExpanded ? SIZES : SIZES.slice(0, SIZES_INITIAL_COUNT)).map((size) => (
+                                <button
+                                    key={size}
+                                    onClick={() => updateFilter('talla', selectedSize === size ? '' : size)}
+                                    className={`shrink-0 px-3.5 h-8 flex items-center justify-center text-[11px] font-mono font-bold rounded-md border transition-all ${selectedSize === size ? 'bg-foreground border-foreground text-background' : 'bg-surface border-border text-foreground-muted hover:text-foreground'}`}
+                                >
+                                    {size}
+                                </button>
+                            ))}
+                            {SIZES.length > SIZES_INITIAL_COUNT && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSizesExpanded((v) => !v)}
+                                    className="shrink-0 px-3 h-8 flex items-center justify-center text-[10px] font-mono text-foreground-muted border border-border rounded-md"
+                                >
+                                    {sizesExpanded ? 'Menos' : 'Ver más'}
+                                </button>
+                            )}
+                            <span className="shrink-0 w-2" aria-hidden />
+                        </div>
+                    </div>
+                    {/* Marcas */}
+                    {brands.length > 0 && (
+                        <div className="pb-3">
+                            <p className="px-4 mb-2 text-[10px] font-mono uppercase tracking-wider text-foreground-muted">Marca</p>
+                            <div className="flex overflow-x-auto scrollbar-hide gap-2 pl-4 pr-4 pb-1 -webkit-overflow-scrolling-touch min-w-0">
+                                {brands.map((brand) => (
+                                    <button
+                                        key={brand.id}
+                                        onClick={() => {
+                                            const set = new Set(selectedBrands)
+                                            if (set.has(brand.slug)) set.delete(brand.slug)
+                                            else set.add(brand.slug)
+                                            updateFilter('marca', Array.from(set).join(','))
+                                        }}
+                                        className={`shrink-0 px-3.5 h-8 flex items-center justify-center text-[11px] font-mono font-bold rounded-md border transition-all max-w-[140px] truncate ${
+                                            selectedBrands.includes(brand.slug) ? 'bg-foreground border-foreground text-background' : 'bg-surface border-border text-foreground-muted hover:text-foreground'
+                                        }`}
+                                        title={brand.name}
+                                    >
+                                        {brand.name}
+                                    </button>
+                                ))}
+                                <span className="shrink-0 w-2" aria-hidden />
+                            </div>
                         </div>
                     )}
                 </div>
