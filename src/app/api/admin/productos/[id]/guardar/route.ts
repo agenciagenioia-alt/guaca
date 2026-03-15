@@ -31,6 +31,7 @@ export async function POST(
     }
     variants: Array<{ size: string; stock: number }>
     existingImagesCount?: number
+    newImageUrls?: string[]
   }
   let imageFiles: File[] = []
 
@@ -62,18 +63,21 @@ export async function POST(
   const existingCount = body.existingImagesCount ?? 0
 
   try {
+    const priceInt = Math.round(Number(body.product.price)) || 0
+    const originalPrice = body.product.original_price != null ? Math.round(Number(body.product.original_price)) : null
+
     const { error: updateError } = await (supabase as any)
       .from('products')
       .update({
         name: body.product.name,
         description: body.product.description ?? null,
         materials_care: body.product.materials_care?.trim() ?? null,
-        price: body.product.price,
-        original_price: body.product.original_price ?? null,
+        price: priceInt,
+        original_price: originalPrice,
         category_id: body.product.category_id,
         is_active: body.product.is_active,
         is_featured: body.product.is_featured,
-        low_stock_alert: body.product.low_stock_alert,
+        low_stock_alert: body.product.low_stock_alert ?? 0,
       })
       .eq('id', id)
 
@@ -83,12 +87,25 @@ export async function POST(
 
     const variantsToInsert = body.variants.map((v: { size: string; stock: number }, index: number) => ({
       product_id: id,
-      size: v.size,
-      stock: v.stock,
+      size: String(v.size),
+      stock: Number(v.stock) || 0,
       display_order: index,
     }))
     const { error: variantError } = await (supabase as any).from('product_variants').insert(variantsToInsert)
     if (variantError) throw variantError
+
+    const newImageUrls = Array.isArray(body.newImageUrls) ? body.newImageUrls : []
+    for (let i = 0; i < newImageUrls.length; i++) {
+      const imageUrl = newImageUrls[i]
+      if (typeof imageUrl !== 'string' || !imageUrl.trim()) continue
+      const { error: imgError } = await (supabase as any).from('product_images').insert({
+        product_id: id,
+        image_url: imageUrl.trim(),
+        is_primary: existingCount === 0 && i === 0,
+        display_order: existingCount + i,
+      })
+      if (imgError) throw imgError
+    }
 
     for (let i = 0; i < imageFiles.length; i++) {
       const file = imageFiles[i]
@@ -104,8 +121,8 @@ export async function POST(
       const { error: imgError } = await (supabase as any).from('product_images').insert({
         product_id: id,
         image_url: urlData.publicUrl,
-        is_primary: existingCount === 0 && i === 0,
-        display_order: existingCount + i,
+        is_primary: existingCount + newImageUrls.length === 0 && i === 0,
+        display_order: existingCount + newImageUrls.length + i,
       })
       if (imgError) throw imgError
     }
@@ -121,9 +138,11 @@ export async function POST(
     return NextResponse.json({ ok: true, slug })
   } catch (err: any) {
     console.error('Error guardar producto admin:', err)
-    return NextResponse.json(
-      { error: err?.message || 'Error al guardar' },
-      { status: 500 }
-    )
+    const message =
+      err?.message ||
+      err?.details ||
+      (typeof err?.error === 'string' ? err.error : null) ||
+      'Error al guardar. Revisa que los datos sean correctos y que el bucket "product-images" exista en Supabase.'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

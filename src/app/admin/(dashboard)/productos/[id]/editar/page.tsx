@@ -176,28 +176,58 @@ export default function EditarProductoPage() {
     if (!id) return
     setSubmitting(true)
     try {
-      const formData = new FormData()
-      formData.append('product', JSON.stringify({
-        name: data.name,
-        description: data.description || null,
-        materials_care: data.materials_care?.trim() || null,
-        price: data.price,
-        original_price: data.original_price || null,
-        category_id: data.category_id,
-        is_active: data.is_active,
-        is_featured: data.is_featured,
-        low_stock_alert: data.low_stock_alert,
-      }))
-      formData.append('variants', JSON.stringify(data.variants.map((v) => ({ size: v.size, stock: v.stock }))))
-      formData.append('existingImagesCount', String(existingImages.length))
-      newImages.forEach((file) => formData.append('images', file))
+      const newImageUrls: string[] = []
+      const supabase = createClient()
+
+      if (newImages.length > 0) {
+        for (let i = 0; i < newImages.length; i++) {
+          const file = newImages[i]
+          const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+          const filename = `${Date.now()}-${i}.${ext}`
+          const urlRes = await fetch('/api/admin/upload-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ folder: id, filename }),
+            credentials: 'include',
+          })
+          const urlData = await urlRes.json().catch(() => ({}))
+          if (!urlRes.ok || !urlData.path || !urlData.token || !urlData.publicUrl) {
+            const errMsg = urlData?.error || (urlRes.status === 401 ? 'Sesión expirada. Cierra sesión y vuelve a entrar.' : `Error al obtener URL de subida (${urlRes.status})`)
+            throw new Error(errMsg)
+          }
+          const { error: uploadErr } = await (supabase as any).storage
+            .from('product-images')
+            .uploadToSignedUrl(urlData.path, urlData.token, file, { contentType: file.type || `image/${ext}` })
+          if (uploadErr) throw new Error(uploadErr.message || 'Error subiendo imagen a Supabase.')
+          newImageUrls.push(urlData.publicUrl)
+        }
+      }
+
+      const payload = {
+        product: {
+          name: data.name,
+          description: data.description || null,
+          materials_care: data.materials_care?.trim() || null,
+          price: data.price,
+          original_price: data.original_price ?? null,
+          category_id: data.category_id,
+          is_active: data.is_active,
+          is_featured: data.is_featured,
+          low_stock_alert: data.low_stock_alert,
+        },
+        variants: data.variants.map((v) => ({ size: v.size, stock: v.stock })),
+        existingImagesCount: existingImages.length,
+        newImageUrls,
+      }
 
       const res = await fetch(`/api/admin/productos/${id}/guardar`, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'include',
       })
       const result = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(result?.error || res.statusText)
+      if (!res.ok) throw new Error(result?.error || res.statusText || 'Error al guardar')
 
       router.push('/admin/productos')
       router.refresh()
