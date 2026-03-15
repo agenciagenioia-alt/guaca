@@ -31,6 +31,7 @@ export async function POST(
     }
     variants: Array<{ size: string; stock: number }>
     existingImagesCount?: number
+    existingImageIds?: string[]
     newImageUrls?: string[]
   }
   let imageFiles: File[] = []
@@ -60,7 +61,8 @@ export async function POST(
   }
 
   const supabase = createServiceRoleClient() as ReturnType<typeof createServiceRoleClient>
-  const existingCount = body.existingImagesCount ?? 0
+  const existingImageIds = Array.isArray(body.existingImageIds) ? body.existingImageIds : []
+  const existingCount = existingImageIds.length > 0 ? existingImageIds.length : (body.existingImagesCount ?? 0)
 
   try {
     const priceInt = Math.round(Number(body.product.price)) || 0
@@ -93,6 +95,17 @@ export async function POST(
     }))
     const { error: variantError } = await (supabase as any).from('product_variants').insert(variantsToInsert)
     if (variantError) throw variantError
+
+    if (existingImageIds.length > 0) {
+      for (let i = 0; i < existingImageIds.length; i++) {
+        const imgId = existingImageIds[i]
+        const { error: updateImgErr } = await (supabase as any)
+          .from('product_images')
+          .update({ display_order: i, is_primary: i === 0 })
+          .eq('id', imgId)
+        if (updateImgErr) throw updateImgErr
+      }
+    }
 
     const newImageUrls = Array.isArray(body.newImageUrls) ? body.newImageUrls : []
     for (let i = 0; i < newImageUrls.length; i++) {

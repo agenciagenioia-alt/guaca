@@ -6,7 +6,7 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, Plus, Trash2, ArrowLeft, Upload } from 'lucide-react'
+import { Loader2, Plus, Trash2, ArrowLeft, Upload, ChevronUp, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { CameraOrGalleryInput } from '@/components/admin/CameraOrGalleryInput'
@@ -172,6 +172,31 @@ export default function EditarProductoPage() {
     setExistingImages((prev) => prev.filter((img) => img.id !== imageId))
   }
 
+  const moveExistingImage = (index: number, direction: 'up' | 'down') => {
+    setExistingImages((prev) => {
+      const next = [...prev]
+      const target = direction === 'up' ? index - 1 : index + 1
+      if (target < 0 || target >= next.length) return prev
+      ;[next[index], next[target]] = [next[target], next[index]]
+      return next
+    })
+  }
+
+  const moveNewImage = (index: number, direction: 'up' | 'down') => {
+    const target = direction === 'up' ? index - 1 : index + 1
+    if (target < 0 || target >= newImages.length) return
+    setNewImages((prev) => {
+      const next = [...prev]
+      ;[next[index], next[target]] = [next[target], next[index]]
+      return next
+    })
+    setNewPreviewUrls((prev) => {
+      const next = [...prev]
+      ;[next[index], next[target]] = [next[target], next[index]]
+      return next
+    })
+  }
+
   const onSubmit = async (data: ProductForm) => {
     if (!id) return
     setSubmitting(true)
@@ -216,7 +241,7 @@ export default function EditarProductoPage() {
           low_stock_alert: data.low_stock_alert,
         },
         variants: data.variants.map((v) => ({ size: v.size, stock: v.stock })),
-        existingImagesCount: existingImages.length,
+        existingImageIds: existingImages.map((img) => img.id),
         newImageUrls,
       }
 
@@ -411,23 +436,47 @@ export default function EditarProductoPage() {
           <div className="space-y-6">
             <div className="bg-surface border border-border rounded-xl p-6 space-y-4">
               <h2 className="text-lg font-bold font-heading mb-4">Imágenes</h2>
+              <p className="text-xs text-foreground-muted mb-3">La primera imagen es la principal. Usa las flechas para ordenar.</p>
               {existingImages.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  {existingImages.map((img) => (
-                    <div key={img.id} className="relative aspect-square rounded-md overflow-hidden bg-background border border-border group">
-                      <Image src={img.image_url} alt="" fill className="object-cover" sizes="120px" />
-                      {img.is_primary && (
-                        <span className="absolute bottom-0 inset-x-0 bg-[#E8E6E1]/90 text-background text-[10px] font-bold text-center py-0.5">
-                          PRINCIPAL
-                        </span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => removeExistingImage(img.id)}
-                        className="absolute top-1 right-1 p-1 bg-background/80 text-error rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+                <div className="space-y-2 mb-4">
+                  {existingImages.map((img, index) => (
+                    <div key={img.id} className="flex items-center gap-2">
+                      <div className="flex flex-col shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => moveExistingImage(index, 'up')}
+                          disabled={index === 0}
+                          className="p-1 text-foreground-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Subir"
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveExistingImage(index, 'down')}
+                          disabled={index === existingImages.length - 1}
+                          className="p-1 text-foreground-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Bajar"
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="relative aspect-square w-20 shrink-0 rounded-md overflow-hidden bg-background border border-border group">
+                        <Image src={img.image_url} alt="" fill className="object-cover" sizes="80px" />
+                        {index === 0 && (
+                          <span className="absolute bottom-0 inset-x-0 bg-[#E8E6E1]/90 text-background text-[9px] font-bold text-center py-0.5">
+                            PRINCIPAL
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImage(img.id)}
+                          className="absolute top-0.5 right-0.5 p-1 bg-background/80 text-error rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <span className="text-xs text-foreground-muted">#{index + 1}</span>
                     </div>
                   ))}
                 </div>
@@ -442,17 +491,41 @@ export default function EditarProductoPage() {
                 <p className="text-xs text-foreground-muted">Cámara o galería. Galería permite varias a la vez.</p>
               </div>
               {newPreviewUrls.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 mt-4">
+                <div className="space-y-2 mt-4">
+                  <p className="text-xs text-foreground-muted">Nuevas imágenes (orden al guardar):</p>
                   {newPreviewUrls.map((url, i) => (
-                    <div key={url} className="relative aspect-square rounded-md overflow-hidden bg-background border border-border group">
-                      <Image src={url} alt={`Nueva ${i}`} fill className="object-cover" sizes="120px" />
-                      <button
-                        type="button"
-                        onClick={() => removeNewImage(i)}
-                        className="absolute top-1 right-1 p-1 bg-background/80 text-error rounded-md opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+                    <div key={url} className="flex items-center gap-2">
+                      <div className="flex flex-col shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => moveNewImage(i, 'up')}
+                          disabled={i === 0}
+                          className="p-1 text-foreground-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Subir"
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveNewImage(i, 'down')}
+                          disabled={i === newPreviewUrls.length - 1}
+                          className="p-1 text-foreground-muted hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
+                          title="Bajar"
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="relative aspect-square w-20 shrink-0 rounded-md overflow-hidden bg-background border border-border group">
+                        <Image src={url} alt={`Nueva ${i}`} fill className="object-cover" sizes="80px" />
+                        <button
+                          type="button"
+                          onClick={() => removeNewImage(i)}
+                          className="absolute top-0.5 right-0.5 p-1 bg-background/80 text-error rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <span className="text-xs text-foreground-muted">Nueva #{i + 1}</span>
                     </div>
                   ))}
                 </div>
