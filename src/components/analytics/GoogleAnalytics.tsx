@@ -3,6 +3,7 @@
 import Script from 'next/script'
 import { useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
@@ -52,7 +53,9 @@ export function GoogleAnalytics() {
           });
         `}
       </Script>
-      <PageViewTracker />
+      <Suspense fallback={null}>
+        <PageViewTracker />
+      </Suspense>
     </>
   )
 }
