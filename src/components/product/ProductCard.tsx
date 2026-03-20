@@ -21,10 +21,16 @@ interface ProductCardProps {
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
     const primaryImage = product.images?.find((img) => img.is_primary) || product.images?.[0]
     const secondaryImage = product.images?.find((img) => !img.is_primary)
+    const cardImages = (product.images?.length ? product.images : [])
+        .slice()
+        .sort((a, b) => a.display_order - b.display_order)
+        .map((img) => img.image_url)
+        .filter(Boolean)
 
     // Usar siempre las imágenes reales de la base de datos
     const primaryUrl = primaryImage?.image_url || 'https://picsum.photos/seed/placeholder/400/500'
     const secondaryUrl = secondaryImage?.image_url
+    const mobileImages = cardImages.length > 0 ? cardImages : [primaryUrl]
 
     const totalStock = product.variants?.reduce((sum, v) => sum + v.stock, 0) ?? 0
     const availableSizes = product.variants?.filter((v) => v.stock > 0).map((v) => v.size) ?? []
@@ -37,7 +43,10 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
     const [isVisible, setIsVisible] = useState(false)
     const [listTracked, setListTracked] = useState(false)
     const [isHovered, setIsHovered] = useState(false)
+    const [mobileImageIndex, setMobileImageIndex] = useState(0)
     const cardRef = useRef<HTMLElement>(null)
+    const touchStartXRef = useRef<number | null>(null)
+    const draggedRef = useRef(false)
 
     useEffect(() => {
         const el = cardRef.current
@@ -99,6 +108,26 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         })
     }
 
+    const handleTouchStart = (e: React.TouchEvent<HTMLAnchorElement>) => {
+        touchStartXRef.current = e.touches[0]?.clientX ?? null
+        draggedRef.current = false
+    }
+
+    const handleTouchEnd = (e: React.TouchEvent<HTMLAnchorElement>) => {
+        const startX = touchStartXRef.current
+        const endX = e.changedTouches[0]?.clientX
+        touchStartXRef.current = null
+        if (startX == null || endX == null || mobileImages.length <= 1) return
+        const delta = endX - startX
+        if (Math.abs(delta) < 35) return
+        draggedRef.current = true
+        if (delta < 0) {
+            setMobileImageIndex((prev) => (prev + 1) % mobileImages.length)
+        } else {
+            setMobileImageIndex((prev) => (prev - 1 + mobileImages.length) % mobileImages.length)
+        }
+    }
+
     return (
         <article
             ref={cardRef}
@@ -118,35 +147,57 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                     href={`/producto/${product.slug}`}
                     className="absolute inset-0 z-0"
                     aria-label={`Ver ${product.name} — ${formatCOP(product.price)}`}
-                    onClick={handleSelectItem}
+                    onClick={(e) => {
+                        if (draggedRef.current) {
+                            e.preventDefault()
+                            draggedRef.current = false
+                            return
+                        }
+                        handleSelectItem()
+                    }}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
                 >
-                    {primaryUrl && (
-                        <Image
-                            src={primaryUrl}
-                            alt={product.name}
-                            fill
-                            sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                            className={`object-cover transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                                isHovered && secondaryUrl ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
-                            }`}
-                            unoptimized={primaryUrl.includes('supabase.co')}
-                        />
-                    )}
+                    {mobileImages.map((url, imgIdx) => {
+                        const isMobileActive = imgIdx === mobileImageIndex
+                        const isDesktopPrimary = imgIdx === 0
+                        const isDesktopSecondary = imgIdx === 1
+                        const isVisibleDesktop = isDesktopPrimary
+                            ? !(isHovered && secondaryUrl)
+                            : isDesktopSecondary
+                                ? isHovered
+                                : false
 
-                    {/* Imagen Secundaria (swap en hover) */}
-                    {secondaryUrl && (
-                        <Image
-                            src={secondaryUrl}
-                            alt={`${product.name} - vista alternativa`}
-                            fill
-                            sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                            className={`object-cover transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                                isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-                            }`}
-                            unoptimized={secondaryUrl.includes('supabase.co')}
-                        />
-                    )}
+                        return (
+                            <Image
+                                key={`${product.id}-${imgIdx}-${url}`}
+                                src={url}
+                                alt={imgIdx === 0 ? product.name : `${product.name} - vista ${imgIdx + 1}`}
+                                fill
+                                sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                                className={`object-cover transition-all duration-500 ease-out
+                                  ${isMobileActive ? 'opacity-100 scale-100 md:opacity-0 md:scale-100' : 'opacity-0 scale-100 md:opacity-0 md:scale-100'}
+                                  ${isVisibleDesktop ? 'md:opacity-100 md:scale-100' : 'md:opacity-0 md:scale-95'}
+                                `}
+                                unoptimized={url.includes('supabase.co')}
+                                quality={imgIdx === 0 ? 72 : 62}
+                                loading={index < 4 && imgIdx === 0 ? 'eager' : 'lazy'}
+                                fetchPriority={index < 2 && imgIdx === 0 ? 'high' : 'auto'}
+                            />
+                        )
+                    })}
                 </Link>
+
+                {mobileImages.length > 1 && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 md:hidden flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full">
+                        {mobileImages.slice(0, 5).map((_, dotIdx) => (
+                            <span
+                                key={`${product.id}-dot-${dotIdx}`}
+                                className={`h-1.5 rounded-full transition-all ${dotIdx === mobileImageIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/60'}`}
+                            />
+                        ))}
+                    </div>
+                )}
 
                 {/* Gradient overlay sutil */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent z-10 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

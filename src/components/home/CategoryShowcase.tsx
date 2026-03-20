@@ -67,8 +67,9 @@ export function CategoryShowcase({ categories }: CategoryShowcaseProps) {
                   src={getCategoryImage(cat.slug, cat.image_url)}
                   alt={cat.name}
                   fill
-                  className="object-cover opacity-90 group-hover/card:opacity-100 group-hover/card:scale-105 transition-all duration-[1s] ease-out"
+                  className="object-cover opacity-90 grayscale md:grayscale-0 group-hover/card:opacity-100 group-hover/card:scale-105 transition-all duration-[1s] ease-out"
                   sizes="(max-width: 768px) 100vw, 30vw"
+                  quality={68}
                   loading="lazy"
                 />
                 

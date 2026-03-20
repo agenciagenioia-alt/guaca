@@ -85,8 +85,10 @@ export function UGCMasonry() {
                 src={src as string}
                 alt={images[idx]?.alt_text || 'Galería La Guaca'}
                 fill
-                className="object-cover"
+                className="object-cover grayscale"
                 sizes="50vw"
+                quality={65}
+                loading={idx < 2 ? 'eager' : 'lazy'}
               />
             </div>
           ))}
