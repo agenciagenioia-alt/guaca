@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk, Bebas_Neue } from 'next/font/google'
 import './globals.css'
 import { LoadingProvider } from '@/components/providers/LoadingProvider'
 import { GlobalLoader } from '@/components/layout/GlobalLoader'
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -60,6 +61,7 @@ export default function RootLayout({
       className={`${inter.variable} ${spaceGrotesk.variable} ${bebasNeue.variable}`}
     >
       <body className="bg-background text-foreground antialiased relative">
+        <GoogleAnalytics />
         <LoadingProvider>
           <GlobalLoader />
           <div style={{ position: 'relative', zIndex: 1 }}>

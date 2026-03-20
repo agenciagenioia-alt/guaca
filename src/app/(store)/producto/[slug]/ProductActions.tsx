@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useCartStore } from '@/store/cart'
 import { useToastStore } from '@/store/toast'
 import type { ProductVariant } from '@/lib/types/database'
 import { Check, Lock, Truck, RefreshCcw } from 'lucide-react'
 import { SizeGuideModal } from '@/components/product/SizeGuideModal'
+import { trackAddToCart, trackViewItem } from '@/lib/analytics/ga'
 
 interface ProductActionsProps {
     product: {
@@ -36,11 +37,27 @@ export function ProductActions({
     const [errorShake, setErrorShake] = useState(false)
     const [added, setAdded] = useState(false)
     const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false)
+    const hasTrackedViewRef = useRef(false)
 
     const addItem = useCartStore((s) => s.addItem)
     const addToast = useToastStore((s) => s.addToast)
     const totalStock = variants.reduce((sum, v) => sum + (v.stock ?? 0), 0)
     const allSoldOut = totalStock <= 0
+
+    useEffect(() => {
+        if (hasTrackedViewRef.current) return
+        trackViewItem({
+            value: product.price,
+            item: {
+                item_id: product.id,
+                item_name: product.name,
+                item_variant: selectedSize || undefined,
+                price: product.price,
+                quantity: 1,
+            },
+        })
+        hasTrackedViewRef.current = true
+    }, [product.id, product.name, product.price, selectedSize])
 
     const handleAddToCart = () => {
         if (!selectedSize) {
@@ -68,6 +85,16 @@ export function ProductActions({
         setErrorShake(false)
         setAdded(true)
         addToast('Agregado al carrito')
+        trackAddToCart({
+            value: product.price,
+            item: {
+                item_id: product.id,
+                item_name: product.name,
+                item_variant: selectedSize,
+                price: product.price,
+                quantity: 1,
+            },
+        })
 
         if (navigator.vibrate) navigator.vibrate(10)
 

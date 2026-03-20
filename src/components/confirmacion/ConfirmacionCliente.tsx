@@ -9,6 +9,7 @@ import { formatCOP } from '@/lib/utils'
 import { useCartStore } from '@/store/cart'
 import { OrderStatusTimeline } from '@/components/order/OrderStatusTimeline'
 import type { Order, OrderItem } from '@/lib/types/database'
+import { trackPurchase } from '@/lib/analytics/ga'
 
 type OrderItemWithProduct = OrderItem & {
   products?: { product_images?: { image_url: string }[] } | null
@@ -71,6 +72,28 @@ export default function ConfirmacionCliente({
   useEffect(() => {
     if (status === 'success') clearCart()
   }, [status, clearCart])
+
+  useEffect(() => {
+    if (status !== 'success' || !order?.order_number) return
+    const dedupeKey = `ga_purchase_sent_${order.order_number}`
+    if (typeof window !== 'undefined' && window.sessionStorage.getItem(dedupeKey) === '1') return
+
+    trackPurchase({
+      transaction_id: order.order_number,
+      value: order.total,
+      items: (order.order_items ?? []).map((item) => ({
+        item_id: item.product_id,
+        item_name: item.product_name,
+        item_variant: item.size,
+        price: item.unit_price,
+        quantity: item.quantity,
+      })),
+    })
+
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(dedupeKey, '1')
+    }
+  }, [status, order])
 
   // Redirigir automáticamente a WhatsApp con el resumen del pedido (nueva pestaña)
   useEffect(() => {

@@ -120,8 +120,9 @@ export default function AdminConfiguracionPage() {
         store_description: data.store_description || null,
         owner_whatsapp: data.owner_whatsapp,
         wompi_payment_link: data.wompi_payment_link || null,
-        instagram_url: data.instagram_url || null,
-        tiktok_url: data.tiktok_url || null,
+        instagram_url: data.instagram_url?.trim() || null,
+        tiktok_url: data.tiktok_url?.trim() || null,
+        whatsapp_url: data.whatsapp_url?.trim() || null,
         announcement_bar_text: data.announcement_bar_text || null,
         announcement_bar_active: data.announcement_bar_active,
         sold_out_message: data.sold_out_message?.trim() || null,
@@ -138,7 +139,7 @@ export default function AdminConfiguracionPage() {
         setUploading(true)
         formData.append('heroImage', heroImageFile)
       }
-      const res = await fetch('/api/admin/store-config', { method: 'POST', body: formData })
+      const res = await fetch('/api/admin/store-config', { method: 'POST', body: formData, credentials: 'include' })
       const result = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(result?.error || res.statusText)
       setHeroImageFile(null)

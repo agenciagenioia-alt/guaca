@@ -7,6 +7,7 @@ import { X, Plus, Minus, ShoppingBag } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
+import { trackAddToCart, trackRemoveFromCart } from '@/lib/analytics/ga'
 interface OutfitProduct {
     id: string
     name: string
@@ -112,7 +113,19 @@ export function CartDrawer({ outfitEnabled = false, outfitProducts = [] }: CartD
                                         <CartItemRow
                                             key={`${item.productId}-${item.size}`}
                                             item={item}
-                                            onRemove={() => removeItem(item.productId, item.size)}
+                                            onRemove={() => {
+                                                trackRemoveFromCart({
+                                                    value: item.unitPrice * item.quantity,
+                                                    item: {
+                                                        item_id: item.productId,
+                                                        item_name: item.productName,
+                                                        item_variant: item.size,
+                                                        price: item.unitPrice,
+                                                        quantity: item.quantity,
+                                                    },
+                                                })
+                                                removeItem(item.productId, item.size)
+                                            }}
                                             onUpdateQty={(qty) => {
                                                 if (qty <= 0) {
                                                     removeItem(item.productId, item.size)
@@ -160,14 +173,26 @@ export function CartDrawer({ outfitEnabled = false, outfitProducts = [] }: CartD
 
                                                         <button
                                                             onClick={() =>
-                                                                addItem({
-                                                                    productId: upsell.id,
-                                                                    productName: upsell.name,
-                                                                    productSlug: upsell.slug,
-                                                                    unitPrice: upsell.price,
-                                                                    imageUrl: upsell.imageUrl,
-                                                                    size: upsell.defaultSize,
-                                                                })
+                                                                {
+                                                                    addItem({
+                                                                        productId: upsell.id,
+                                                                        productName: upsell.name,
+                                                                        productSlug: upsell.slug,
+                                                                        unitPrice: upsell.price,
+                                                                        imageUrl: upsell.imageUrl,
+                                                                        size: upsell.defaultSize,
+                                                                    })
+                                                                    trackAddToCart({
+                                                                        value: upsell.price,
+                                                                        item: {
+                                                                            item_id: upsell.id,
+                                                                            item_name: upsell.name,
+                                                                            item_variant: upsell.defaultSize,
+                                                                            price: upsell.price,
+                                                                            quantity: 1,
+                                                                        },
+                                                                    })
+                                                                }
                                                             }
                                                             className="w-full mt-2 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest bg-surface hover:bg-foreground hover:text-background border border-border transition-colors flex justify-center items-center gap-1 text-foreground"
                                                         >

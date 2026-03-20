@@ -8,6 +8,7 @@ import { WishlistButton } from '@/components/product/WishlistButton'
 import { useCartStore } from '@/store/cart'
 import { ShoppingBag, Eye } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { trackAddToCart, trackSelectItem, trackViewItemList } from '@/lib/analytics/ga'
 
 interface ProductCardProps {
     product: Product & {
@@ -34,6 +35,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
     const { addItem, openCart } = useCartStore()
 
     const [isVisible, setIsVisible] = useState(false)
+    const [listTracked, setListTracked] = useState(false)
     const [isHovered, setIsHovered] = useState(false)
     const cardRef = useRef<HTMLElement>(null)
 
@@ -48,6 +50,30 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         return () => observer.disconnect()
     }, [])
 
+    useEffect(() => {
+        if (!isVisible || listTracked) return
+        trackViewItemList({
+            items: [{
+                item_id: product.id,
+                item_name: product.name,
+                price: product.price,
+                quantity: 1,
+            }],
+        })
+        setListTracked(true)
+    }, [isVisible, listTracked, product.id, product.name, product.price])
+
+    const handleSelectItem = () => {
+        trackSelectItem({
+            item: {
+                item_id: product.id,
+                item_name: product.name,
+                price: product.price,
+                quantity: 1,
+            },
+        })
+    }
+
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault()
         e.stopPropagation()
@@ -61,6 +87,16 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
             imageUrl: primaryUrl,
         })
         openCart()
+        trackAddToCart({
+            value: product.price,
+            item: {
+                item_id: product.id,
+                item_name: product.name,
+                item_variant: availableSizes[0],
+                price: product.price,
+                quantity: 1,
+            },
+        })
     }
 
     return (
@@ -82,6 +118,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                     href={`/producto/${product.slug}`}
                     className="absolute inset-0 z-0"
                     aria-label={`Ver ${product.name} — ${formatCOP(product.price)}`}
+                    onClick={handleSelectItem}
                 >
                     {primaryUrl && (
                         <Image
@@ -157,6 +194,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
                     <Link
                         href={`/producto/${product.slug}`}
                         className="flex-1 h-10 bg-[rgba(10,10,10,0.92)] text-[rgba(232,230,225,0.96)] font-bold text-[11px] font-heading tracking-[0.12em] uppercase hover:bg-black transition-all flex items-center justify-center gap-2 shadow-lg border border-[rgba(232,230,225,0.18)]"
+                        onClick={handleSelectItem}
                     >
                         <Eye className="w-3.5 h-3.5 text-[rgba(232,230,225,0.96)]" />
                         VER DETALLES

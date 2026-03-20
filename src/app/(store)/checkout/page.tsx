@@ -7,6 +7,7 @@ import { formatCOP } from '@/lib/utils'
 import { useCartStore } from '@/store/cart'
 import { Lock, CreditCard, ChevronLeft } from 'lucide-react'
 import WompiButton from '@/components/checkout/WompiButton'
+import { trackAddShippingInfo, trackBeginCheckout } from '@/lib/analytics/ga'
 
 // Hook para format celular 300 000 0000
 const formatPhoneCol = (val: string) => {
@@ -33,6 +34,7 @@ export default function CheckoutPage() {
         publicKey: string
     } | null>(null)
     const [redirectUrl, setRedirectUrl] = useState('')
+    const [checkoutTracked, setCheckoutTracked] = useState(false)
 
     const [formData, setFormData] = useState({
         name: '',
@@ -65,6 +67,22 @@ export default function CheckoutPage() {
             router.push('/catalogo')
         }
     }, [safeItems.length, router])
+
+    useEffect(() => {
+        if (!mounted || checkoutTracked || safeItems.length === 0) return
+        const total = typeof totalPrice === 'function' ? totalPrice() : 0
+        trackBeginCheckout({
+            value: total,
+            items: safeItems.map((item) => ({
+                item_id: item.productId,
+                item_name: item.productName,
+                item_variant: item.size,
+                price: item.unitPrice,
+                quantity: item.quantity,
+            })),
+        })
+        setCheckoutTracked(true)
+    }, [mounted, checkoutTracked, safeItems, totalPrice])
 
     // Persistir datos básicos de envío en localStorage en cada cambio (siempre mismo número de hooks)
     useEffect(() => {
@@ -122,6 +140,17 @@ export default function CheckoutPage() {
 
         try {
             const total = typeof totalPrice === 'function' ? totalPrice() : 0
+            trackAddShippingInfo({
+                value: total,
+                shipping_tier: 'envio nacional por coordinar',
+                items: safeItems.map((item) => ({
+                    item_id: item.productId,
+                    item_name: item.productName,
+                    item_variant: item.size,
+                    price: item.unitPrice,
+                    quantity: item.quantity,
+                })),
+            })
             const res = await fetch('/api/checkout/crear-orden', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

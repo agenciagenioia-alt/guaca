@@ -6,10 +6,24 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Plus, Minus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { trackRemoveFromCart } from '@/lib/analytics/ga'
 
 export default function CarritoPage() {
     const { items, removeItem, updateQuantity, totalPrice } = useCartStore()
     const [mounted, setMounted] = useState(false)
+    const handleRemove = (item: typeof items[number]) => {
+        trackRemoveFromCart({
+            value: item.unitPrice * item.quantity,
+            item: {
+                item_id: item.productId,
+                item_name: item.productName,
+                item_variant: item.size,
+                price: item.unitPrice,
+                quantity: item.quantity,
+            },
+        })
+        removeItem(item.productId, item.size)
+    }
 
     useEffect(() => {
         setMounted(true)
@@ -120,7 +134,7 @@ export default function CarritoPage() {
                                     </div>
 
                                     <button
-                                        onClick={() => removeItem(item.productId, item.size)}
+                                        onClick={() => handleRemove(item)}
                                         className="self-start flex items-center justify-center w-10 h-10 text-foreground-subtle hover:text-error transition-colors"
                                         aria-label={`Eliminar ${item.productName} del carrito`}
                                     >
