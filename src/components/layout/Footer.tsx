@@ -31,7 +31,7 @@ function normalizeSocialUrl(raw: string | null | undefined, platform: 'instagram
 export function Footer({ instagramUrl, tiktokUrl, whatsappUrl }: FooterProps) {
     const { addToast } = useToastStore()
     const [clicks, setClicks] = useState(0)
-    const resolvedInstagramUrl = normalizeSocialUrl(instagramUrl, 'instagram') || 'https://instagram.com/laguaca.co'
+    const resolvedInstagramUrl = 'https://www.instagram.com/boutiquelaguaca1/'
     const resolvedWhatsappUrl = normalizeSocialUrl(whatsappUrl, 'whatsapp') || 'https://wa.me/573001234567'
 
     const handleLogoClick = () => {
