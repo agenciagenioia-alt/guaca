@@ -76,37 +76,57 @@ export default function AdminConfiguracionPage() {
   useEffect(() => {
     const fetchConfig = async () => {
       const supabase = createClient() as any
-      const { data } = await supabase.from('store_config').select('*').eq('id', 1).single()
-      const typedData = data as any // Type escape hatch since Supabase generic config might be incomplete
+      try {
+        const { data, error } = await supabase.from('store_config').select('*').eq('id', 1).single()
+        if (error) throw error
+        const typedData = data as any // Type escape hatch since Supabase generic config might be incomplete
 
-      if (typedData) {
-        reset({
-          store_name: typedData.store_name,
-          store_description: typedData.store_description || '',
-          owner_whatsapp: typedData.owner_whatsapp,
-          wompi_payment_link: typedData.wompi_payment_link || '',
-          instagram_url: typedData.instagram_url || '',
-          tiktok_url: typedData.tiktok_url || '',
-          whatsapp_url: typedData.whatsapp_url || '',
-          announcement_bar_text: typedData.announcement_bar_text || '',
-          announcement_bar_active: typedData.announcement_bar_active,
-          sold_out_message: typedData.sold_out_message || '',
-          sold_out_whatsapp_message: typedData.sold_out_whatsapp_message || '',
-          shipping_returns_text: typedData.shipping_returns_text || '',
-          hero_image_url: typedData.hero_image_url || '',
-          hero_video_url: typedData.hero_video_url || '',
-        })
-        setOutfitSectionEnabled(Boolean(typedData.outfit_section_enabled))
-        try {
-          const ids = typedData.outfit_product_ids ? JSON.parse(typedData.outfit_product_ids) : []
-          setSelectedOutfitProductIds(Array.isArray(ids) ? ids : [])
-        } catch {
-          setSelectedOutfitProductIds([])
+        if (typedData) {
+          reset({
+            store_name: typedData.store_name || '',
+            store_description: typedData.store_description || '',
+            owner_whatsapp: typedData.owner_whatsapp || '',
+            wompi_payment_link: typedData.wompi_payment_link || '',
+            instagram_url: typedData.instagram_url || '',
+            tiktok_url: typedData.tiktok_url || '',
+            whatsapp_url: typedData.whatsapp_url || '',
+            announcement_bar_text: typedData.announcement_bar_text || '',
+            announcement_bar_active: Boolean(typedData.announcement_bar_active),
+            sold_out_message: typedData.sold_out_message || '',
+            sold_out_whatsapp_message: typedData.sold_out_whatsapp_message || '',
+            shipping_returns_text: typedData.shipping_returns_text || '',
+            hero_image_url: typedData.hero_image_url || '',
+            hero_video_url: typedData.hero_video_url || '',
+          })
+          setOutfitSectionEnabled(Boolean(typedData.outfit_section_enabled))
+          try {
+            const ids = typedData.outfit_product_ids ? JSON.parse(typedData.outfit_product_ids) : []
+            setSelectedOutfitProductIds(Array.isArray(ids) ? ids : [])
+          } catch {
+            setSelectedOutfitProductIds([])
+          }
         }
+
+        const { data: products, error: productsError } = await supabase
+          .from('products')
+          .select('id, name, slug')
+          .eq('is_active', true)
+          .order('name')
+        if (productsError) throw productsError
+        setOutfitProductsList((products || []) as { id: string; name: string; slug: string }[])
+      } catch (err: any) {
+        console.error('Error cargando configuración admin:', err)
+        const msg = String(err?.message || '').toLowerCase()
+        const quotaHint = msg.includes('402') || msg.includes('quota') || msg.includes('egress')
+        setMessage({
+          type: 'error',
+          text: quotaHint
+            ? 'Supabase está limitado por cuota/egress en este momento. Por eso el admin no carga o no guarda cambios.'
+            : `No se pudo cargar la configuración: ${err?.message || 'error desconocido'}`,
+        })
+      } finally {
+        setLoading(false)
       }
-      const { data: products } = await supabase.from('products').select('id, name, slug').eq('is_active', true).order('name')
-      setOutfitProductsList((products || []) as { id: string; name: string; slug: string }[])
-      setLoading(false)
     }
     fetchConfig()
   }, [reset])
