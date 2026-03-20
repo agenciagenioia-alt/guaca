@@ -11,9 +11,28 @@ interface FooterProps {
     whatsappUrl?: string | null
 }
 
+function normalizeSocialUrl(raw: string | null | undefined, platform: 'instagram' | 'whatsapp') {
+    const value = (raw || '').trim()
+    if (!value) return null
+
+    if (value.startsWith('http://') || value.startsWith('https://')) return value
+
+    if (platform === 'instagram') {
+        const noAt = value.replace(/^@/, '').replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/\/+$/, '')
+        if (!noAt) return null
+        return `https://instagram.com/${noAt}`
+    }
+
+    const digits = value.replace(/\D/g, '')
+    if (!digits) return null
+    return `https://wa.me/${digits}`
+}
+
 export function Footer({ instagramUrl, tiktokUrl, whatsappUrl }: FooterProps) {
     const { addToast } = useToastStore()
     const [clicks, setClicks] = useState(0)
+    const resolvedInstagramUrl = normalizeSocialUrl(instagramUrl, 'instagram') || 'https://instagram.com/laguaca.co'
+    const resolvedWhatsappUrl = normalizeSocialUrl(whatsappUrl, 'whatsapp') || 'https://wa.me/573001234567'
 
     const handleLogoClick = () => {
         const newClicks = clicks + 1
@@ -98,20 +117,18 @@ export function Footer({ instagramUrl, tiktokUrl, whatsappUrl }: FooterProps) {
                                 Conexión
                             </h2>
                             <div className="flex items-center gap-4">
-                                {instagramUrl && (
-                                    <a
-                                        href={instagramUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="group flex flex-col gap-2 border border-border bg-surface hover:bg-foreground hover:border-foreground hover:text-background text-foreground p-4 transition-all duration-300 w-full"
-                                        aria-label="Seguir a La Guaca en Instagram"
-                                    >
-                                        <Instagram className="w-5 h-5 mb-2 group-hover:scale-110 transition-transform" />
-                                        <span className="font-mono text-[10px] tracking-widest uppercase">Instagram</span>
-                                    </a>
-                                )}
                                 <a
-                                    href={whatsappUrl || 'https://wa.me/573001234567'}
+                                    href={resolvedInstagramUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="group flex flex-col gap-2 border border-border bg-surface hover:bg-foreground hover:border-foreground hover:text-background text-foreground p-4 transition-all duration-300 w-full"
+                                    aria-label="Seguir a La Guaca en Instagram"
+                                >
+                                    <Instagram className="w-5 h-5 mb-2 group-hover:scale-110 transition-transform" />
+                                    <span className="font-mono text-[10px] tracking-widest uppercase">Instagram</span>
+                                </a>
+                                <a
+                                    href={resolvedWhatsappUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="group flex flex-col gap-2 border border-border bg-surface hover:bg-foreground hover:border-foreground hover:text-background text-foreground p-4 transition-all duration-300 w-full"
