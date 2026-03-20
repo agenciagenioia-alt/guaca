@@ -22,9 +22,9 @@ const configSchema = z.object({
     .url('Debe ser una URL válida de Wompi')
     .optional()
     .or(z.literal('')),
-  instagram_url: z.string().url('URL inválida').optional().or(z.literal('')),
-  tiktok_url: z.string().url('URL inválida').optional().or(z.literal('')),
-  whatsapp_url: z.string().url('URL inválida').optional().or(z.literal('')),
+  instagram_url: z.string().optional().or(z.literal('')),
+  tiktok_url: z.string().optional().or(z.literal('')),
+  whatsapp_url: z.string().optional().or(z.literal('')),
   announcement_bar_text: z.string().optional(),
   announcement_bar_active: z.boolean().default(false),
   sold_out_message: z.string().optional(),
@@ -35,6 +35,41 @@ const configSchema = z.object({
 })
 
 type ConfigForm = z.infer<typeof configSchema>
+
+function normalizeInstagramUrl(raw?: string | null) {
+  const value = (raw || '').trim()
+  if (!value) return null
+  if (value.startsWith('http://') || value.startsWith('https://')) return value
+  const noAt = value
+    .replace(/^@/, '')
+    .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
+    .replace(/[()]/g, '')
+    .replace(/\/+$/, '')
+  if (!noAt) return null
+  return `https://instagram.com/${noAt}`
+}
+
+function normalizeTiktokUrl(raw?: string | null) {
+  const value = (raw || '').trim()
+  if (!value) return null
+  if (value.startsWith('http://') || value.startsWith('https://')) return value
+  const user = value
+    .replace(/^@/, '')
+    .replace(/^https?:\/\/(www\.)?tiktok\.com\/@?/i, '')
+    .replace(/[()]/g, '')
+    .replace(/\/+$/, '')
+  if (!user) return null
+  return `https://tiktok.com/@${user}`
+}
+
+function normalizeWhatsappUrl(raw?: string | null) {
+  const value = (raw || '').trim()
+  if (!value) return null
+  if (value.startsWith('http://') || value.startsWith('https://')) return value
+  const digits = value.replace(/\D/g, '')
+  if (!digits) return null
+  return `https://wa.me/${digits}`
+}
 
 export default function AdminConfiguracionPage() {
   const router = useRouter()
@@ -140,9 +175,9 @@ export default function AdminConfiguracionPage() {
         store_description: data.store_description || null,
         owner_whatsapp: data.owner_whatsapp,
         wompi_payment_link: data.wompi_payment_link || null,
-        instagram_url: data.instagram_url?.trim() || null,
-        tiktok_url: data.tiktok_url?.trim() || null,
-        whatsapp_url: data.whatsapp_url?.trim() || null,
+        instagram_url: normalizeInstagramUrl(data.instagram_url),
+        tiktok_url: normalizeTiktokUrl(data.tiktok_url),
+        whatsapp_url: normalizeWhatsappUrl(data.whatsapp_url),
         announcement_bar_text: data.announcement_bar_text || null,
         announcement_bar_active: data.announcement_bar_active,
         sold_out_message: data.sold_out_message?.trim() || null,
