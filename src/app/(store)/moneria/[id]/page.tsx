@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { unstable_noStore } from 'next/cache'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import type { MoneriaProduct } from '@/lib/moneria'
 import { MoneriaProductActions } from './MoneriaProductActions'
+import { MoneriaGallery } from './MoneriaGallery'
 import { formatCOP } from '@/lib/utils'
 import { ArrowLeft } from 'lucide-react'
 
@@ -84,62 +84,8 @@ export default async function MoneriaProductoPage({ params }: Props) {
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
 
-          {/* Galería */}
-          <div className="flex flex-col gap-2">
-            {/* Imagen principal grande */}
-            <div
-              className="relative w-full overflow-hidden"
-              style={{ aspectRatio: '3/4', borderRadius: 0, background: '#1A1A18' }}
-            >
-              <Image
-                src={gallery[0]}
-                alt={product.name}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-                priority
-                unoptimized={gallery[0].includes('supabase.co')}
-              />
-              {/* Badge Monería */}
-              <div
-                className="absolute top-0 left-0"
-                style={{
-                  background: ACCENT,
-                  color: BG,
-                  fontFamily: MONO,
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                  padding: '5px 10px',
-                }}
-              >
-                MONERÍA STUDIO
-              </div>
-            </div>
-
-            {/* Thumbnails galería */}
-            {gallery.length > 1 && (
-              <div className="grid grid-cols-4 gap-1">
-                {gallery.slice(1).map((url, idx) => (
-                  <div
-                    key={idx}
-                    className="relative overflow-hidden"
-                    style={{ aspectRatio: '3/4', background: '#1A1A18', borderRadius: 0 }}
-                  >
-                    <Image
-                      src={url}
-                      alt={`${product.name} vista ${idx + 2}`}
-                      fill
-                      className="object-cover"
-                      sizes="25vw"
-                      unoptimized={url.includes('supabase.co')}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Galería con flechas, swipe y thumbnails */}
+          <MoneriaGallery images={gallery} productName={product.name} />
 
           {/* Info del producto */}
           <div className="flex flex-col gap-4 py-4">
