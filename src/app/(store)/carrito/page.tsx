@@ -78,7 +78,7 @@ export default function CarritoPage() {
                                     <div className="flex-1 flex flex-col justify-between min-w-0">
                                         <div>
                                             <Link
-                                                href={`/producto/${item.productSlug}`}
+                                                href={item.productSlug.startsWith('moneria-') ? `/moneria/${item.productId}` : `/producto/${item.productSlug}`}
                                                 className="font-medium text-foreground hover:text-foreground-muted transition-colors"
                                             >
                                                 {item.productName}

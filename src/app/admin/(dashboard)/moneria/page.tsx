@@ -37,7 +37,16 @@ export default function AdminMoneriaPage() {
         supabase.from('moneria_products').select('*').order('created_at', { ascending: false }),
         supabase.from('moneria_section_config').select('*').eq('id', 1).single(),
       ])
+      if (productsRes.error) {
+        const msg = productsRes.error.message || ''
+        if (!msg.includes('does not exist') && !msg.includes('relation')) {
+          setMessage({ type: 'error', text: `Error cargando productos: ${msg}` })
+        }
+      }
       if (productsRes.data) setProducts(productsRes.data)
+      if (configRes.error && !configRes.error.message?.includes('does not exist')) {
+        setMessage({ type: 'error', text: `Error cargando configuración: ${configRes.error.message}` })
+      }
       if (configRes.data) {
         const c = configRes.data as MoneriaSectionConfig
         setConfig(c)

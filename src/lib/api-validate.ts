@@ -15,6 +15,7 @@ const MAX_JSON_BODY = 100 * 1024 // 100 KB
 export const crearOrdenItemSchema = z.object({
   productId: z.string().min(1).max(50),
   productName: z.string().min(1).max(200),
+  productSlug: z.string().max(200).optional(),
   imageUrl: z.string().url().max(MAX_STRING).optional().or(z.literal('')),
   size: z.string().min(1).max(20),
   quantity: z.number().int().min(1).max(10),

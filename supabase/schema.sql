@@ -403,6 +403,12 @@ ON CONFLICT (id) DO NOTHING;
 ALTER TABLE moneria_products ADD COLUMN IF NOT EXISTS variants jsonb DEFAULT '[]';
 ALTER TABLE moneria_products ADD COLUMN IF NOT EXISTS images text[] DEFAULT '{}';
 
+-- Soporte de productos Monería en order_items:
+-- 1. Quitar FK estricta de product_id para permitir UUIDs de moneria_products
+-- 2. Agregar columna product_source para distinguir el origen
+ALTER TABLE order_items DROP CONSTRAINT IF EXISTS order_items_product_id_fkey;
+ALTER TABLE order_items ADD COLUMN IF NOT EXISTS product_source text DEFAULT 'products';
+
 -- Bucket para imágenes de Monería
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('moneria-products', 'moneria-products', true)

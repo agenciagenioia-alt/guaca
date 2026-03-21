@@ -64,11 +64,32 @@ export default async function ConfirmacionPage({ searchParams }: ConfirmacionPag
   // Restar inventario solo la primera vez que se confirma el pago
   if (!alreadyConfirmed && order.order_items && Array.isArray(order.order_items)) {
     for (const item of order.order_items) {
-      await supabase.rpc('decrement_stock', {
-        p_product_id: item.product_id,
-        p_size: item.size,
-        p_quantity: item.quantity,
-      })
+      if (item.product_source === 'moneria') {
+        const { data: mp } = await supabase
+          .from('moneria_products')
+          .select('variants, stock')
+          .eq('id', item.product_id)
+          .single()
+        if (mp) {
+          const variants = Array.isArray(mp.variants) ? mp.variants : []
+          const updated = variants.map((v: { size: string; stock: number }) =>
+            v.size === item.size
+              ? { ...v, stock: Math.max(0, v.stock - (item.quantity ?? 1)) }
+              : v
+          )
+          const newTotal = updated.reduce((s: number, v: { stock: number }) => s + v.stock, 0)
+          await supabase
+            .from('moneria_products')
+            .update({ variants: updated, stock: newTotal })
+            .eq('id', item.product_id)
+        }
+      } else {
+        await supabase.rpc('decrement_stock', {
+          p_product_id: item.product_id,
+          p_size: item.size,
+          p_quantity: item.quantity,
+        })
+      }
     }
   }
 

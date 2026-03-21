@@ -158,6 +158,7 @@ export default function CheckoutPage() {
                     items: safeItems.map((item) => ({
                         productId: item.productId,
                         productName: item.productName,
+                        productSlug: item.productSlug,
                         imageUrl: item.imageUrl,
                         size: item.size,
                         quantity: item.quantity,

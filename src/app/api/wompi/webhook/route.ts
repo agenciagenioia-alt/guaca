@@ -58,16 +58,38 @@ export async function POST(req: NextRequest) {
         if (order) {
           const { data: items } = await supabase
             .from('order_items')
-            .select('product_id, size, quantity')
+            .select('product_id, size, quantity, product_source')
             .eq('order_id', order.id)
 
           if (items?.length) {
             for (const item of items) {
-              await supabase.rpc('decrement_stock', {
-                p_product_id: item.product_id,
-                p_size: item.size,
-                p_quantity: item.quantity ?? 1,
-              })
+              if (item.product_source === 'moneria') {
+                // Reducir stock en moneria_products.variants (jsonb)
+                const { data: mp } = await supabase
+                  .from('moneria_products')
+                  .select('variants, stock')
+                  .eq('id', item.product_id)
+                  .single()
+                if (mp) {
+                  const variants = Array.isArray(mp.variants) ? mp.variants : []
+                  const updated = variants.map((v: { size: string; stock: number }) =>
+                    v.size === item.size
+                      ? { ...v, stock: Math.max(0, v.stock - (item.quantity ?? 1)) }
+                      : v
+                  )
+                  const newTotal = updated.reduce((s: number, v: { stock: number }) => s + v.stock, 0)
+                  await supabase
+                    .from('moneria_products')
+                    .update({ variants: updated, stock: newTotal })
+                    .eq('id', item.product_id)
+                }
+              } else {
+                await supabase.rpc('decrement_stock', {
+                  p_product_id: item.product_id,
+                  p_size: item.size,
+                  p_quantity: item.quantity ?? 1,
+                })
+              }
             }
           }
 

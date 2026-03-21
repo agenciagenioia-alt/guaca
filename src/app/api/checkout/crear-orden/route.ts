@@ -116,6 +116,7 @@ export async function POST(req: NextRequest) {
       size: item.size,
       quantity: item.quantity,
       unit_price: item.unitPrice,
+      product_source: item.productSlug?.startsWith('moneria-') ? 'moneria' : 'products',
     }))
 
     const { error: itemsError } = await supabase.from('order_items').insert(orderItems)

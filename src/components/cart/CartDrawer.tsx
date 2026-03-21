@@ -268,7 +268,7 @@ function CartItemRow({
                 <div className="flex justify-between items-start gap-2">
                     <div>
                         <Link
-                            href={`/producto/${item.productSlug}`}
+                            href={item.productSlug.startsWith('moneria-') ? `/moneria/${item.productId}` : `/producto/${item.productSlug}`}
                             className="text-[15px] font-bold text-foreground line-clamp-1 hover:text-foreground-muted transition-colors font-body"
                         >
                             {item.productName}
