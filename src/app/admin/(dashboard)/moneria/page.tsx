@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Plus, Trash2, Edit, Loader2, Eye, EyeOff } from 'lucide-react'
+import { Plus, Trash2, Edit, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import { MoneriaProductForm } from './components/MoneriaProductForm'
 import type { MoneriaProduct, MoneriaSectionConfig } from '@/lib/moneria'
@@ -60,17 +60,21 @@ export default function AdminMoneriaPage() {
     setSaving(true)
     setMessage(null)
     try {
-      const payload: Partial<MoneriaSectionConfig> = {
+      const payload = {
         is_visible: cfgVisible,
         section_title: cfgTitle.trim() || 'DROP',
         section_subtitle: cfgSubtitle.trim() || 'MONERÍA STUDIO',
         section_description: cfgDescription.trim() || null,
         drop_label: cfgDropLabel.trim() || 'DROP 001',
       }
-      const { error } = await supabase
-        .from('moneria_section_config')
-        .upsert({ id: 1, ...payload })
-      if (error) throw error
+      const res = await fetch('/api/admin/moneria/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        credentials: 'include',
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data?.error || 'Error al guardar')
       setMessage({ type: 'success', text: 'Configuración guardada correctamente' })
     } catch (err: any) {
       setMessage({ type: 'error', text: err?.message || 'Error al guardar' })
@@ -80,26 +84,38 @@ export default function AdminMoneriaPage() {
   }
 
   const toggleActive = async (product: MoneriaProduct) => {
-    const { error } = await supabase
-      .from('moneria_products')
-      .update({ is_active: !product.is_active, updated_at: new Date().toISOString() })
-      .eq('id', product.id)
-    if (!error) setProducts((prev) => prev.map((p) => p.id === product.id ? { ...p, is_active: !p.is_active } : p))
+    const res = await fetch('/api/admin/moneria/products', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: product.id, is_active: !product.is_active }),
+      credentials: 'include',
+    })
+    if (res.ok) setProducts((prev) => prev.map((p) => p.id === product.id ? { ...p, is_active: !p.is_active } : p))
   }
 
   const toggleFeatured = async (product: MoneriaProduct) => {
-    const { error } = await supabase
-      .from('moneria_products')
-      .update({ is_featured: !product.is_featured, updated_at: new Date().toISOString() })
-      .eq('id', product.id)
-    if (!error) setProducts((prev) => prev.map((p) => p.id === product.id ? { ...p, is_featured: !p.is_featured } : p))
+    const res = await fetch('/api/admin/moneria/products', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: product.id, is_featured: !product.is_featured }),
+      credentials: 'include',
+    })
+    if (res.ok) setProducts((prev) => prev.map((p) => p.id === product.id ? { ...p, is_featured: !p.is_featured } : p))
   }
 
   const deleteProduct = async (id: string) => {
     if (!confirm('¿Eliminar este producto de Monería? Esta acción no se puede deshacer.')) return
-    const { error } = await supabase.from('moneria_products').delete().eq('id', id)
-    if (!error) setProducts((prev) => prev.filter((p) => p.id !== id))
-    else setMessage({ type: 'error', text: error.message })
+    const res = await fetch('/api/admin/moneria/products', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+      credentials: 'include',
+    })
+    if (res.ok) setProducts((prev) => prev.filter((p) => p.id !== id))
+    else {
+      const data = await res.json().catch(() => ({}))
+      setMessage({ type: 'error', text: data?.error || 'Error al eliminar' })
+    }
   }
 
   const openCreate = () => { setEditingProduct(null); setShowForm(true) }

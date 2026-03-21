@@ -121,16 +121,25 @@ export function MoneriaProductForm({ initial, onClose, onSaved }: MoneriaProduct
         updated_at: new Date().toISOString(),
       }
 
-      let error
+      let apiRes: Response
       if (isEdit && initial?.id) {
-        const result = await supabase.from('moneria_products').update(payload).eq('id', initial.id)
-        error = result.error
+        apiRes = await fetch('/api/admin/moneria/products', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: initial.id, ...payload }),
+          credentials: 'include',
+        })
       } else {
-        const result = await supabase.from('moneria_products').insert(payload)
-        error = result.error
+        apiRes = await fetch('/api/admin/moneria/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          credentials: 'include',
+        })
       }
 
-      if (error) throw error
+      const apiData = await apiRes.json().catch(() => ({}))
+      if (!apiRes.ok) throw new Error(apiData?.error || `Error al guardar (${apiRes.status})`)
       setMessage({ type: 'success', text: isEdit ? 'Producto actualizado' : 'Producto creado' })
       setTimeout(() => { onSaved(); onClose() }, 700)
     } catch (err: any) {
