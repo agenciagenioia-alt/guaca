@@ -352,3 +352,60 @@ CREATE POLICY "Solo admins borran imágenes" ON storage.objects
     bucket_id = 'product-images' AND
     EXISTS (SELECT 1 FROM user_roles WHERE uid = auth.uid() AND role = 'admin')
   );
+
+-- ═══════════════════════════════════════════════════════════════
+-- MONERÍA STUDIO — Tablas y políticas
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS moneria_products (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name             text NOT NULL,
+  description      text,
+  price            numeric(10,2) NOT NULL,
+  image_url        text NOT NULL,
+  second_image_url text,
+  sizes            text[] DEFAULT '{}',
+  is_active        boolean DEFAULT true,
+  is_featured      boolean DEFAULT false,
+  stock            integer DEFAULT 0,
+  created_at       timestamptz DEFAULT now(),
+  updated_at       timestamptz DEFAULT now()
+);
+
+ALTER TABLE moneria_products ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "lectura publica moneria_products"
+  ON moneria_products FOR SELECT USING (true);
+
+CREATE TABLE IF NOT EXISTS moneria_section_config (
+  id                  integer PRIMARY KEY DEFAULT 1,
+  is_visible          boolean DEFAULT true,
+  section_title       text DEFAULT 'DROP',
+  section_subtitle    text DEFAULT 'MONERÍA STUDIO',
+  section_description text,
+  drop_label          text DEFAULT 'DROP 001'
+);
+
+ALTER TABLE moneria_section_config ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "lectura publica moneria_section_config"
+  ON moneria_section_config FOR SELECT USING (true);
+
+INSERT INTO moneria_section_config (id, is_visible, section_title, section_subtitle, section_description, drop_label)
+VALUES (
+  1, true, 'DROP', 'MONERÍA STUDIO',
+  'Diseño colombiano de autor. Piezas de edición limitada para quienes entienden que la moda es identidad.',
+  'DROP 001'
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Bucket para imágenes de Monería
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('moneria-products', 'moneria-products', true)
+ON CONFLICT DO NOTHING;
+
+CREATE POLICY "Monería imágenes públicas" ON storage.objects
+  FOR SELECT USING (bucket_id = 'moneria-products');
+
+CREATE POLICY "Monería service role sube" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'moneria-products');

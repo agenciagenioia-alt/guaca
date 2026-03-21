@@ -16,6 +16,7 @@ import {
   MessageSquare,
   Tag,
   Users,
+  Sparkles,
 } from 'lucide-react'
 import { ToastContainer } from '@/components/ui/ToastContainer'
 
@@ -38,6 +39,7 @@ export default function AdminLayout({
     { name: 'Reseñas', href: '/admin/resenas', icon: MessageSquare },
     { name: 'Marcas', href: '/admin/marcas', icon: Tag },
     { name: 'Nosotros', href: '/admin/nosotros', icon: Users },
+    { name: 'Monería Drop', href: '/admin/moneria', icon: Sparkles },
     { name: 'Configuración', href: '/admin/configuracion', icon: Settings },
   ]
 

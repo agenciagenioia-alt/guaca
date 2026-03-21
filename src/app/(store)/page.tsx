@@ -10,6 +10,7 @@ import { StoreBanner } from '@/components/home/StoreBanner'
 import { TapeStrip } from '@/components/home/TapeStrip'
 import { Testimonials } from '@/components/home/Testimonials'
 import { FinalCTA } from '@/components/home/FinalCTA'
+import { MoneriaDropSection } from '@/components/sections/MoneriaDropSection'
 import { createClient } from '@/lib/supabase/server'
 import { unstable_noStore } from 'next/cache'
 import { ProductCard } from '@/components/product/ProductCard'
@@ -17,6 +18,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, Sparkles, Truck, Shield } from 'lucide-react'
 import type { Metadata } from 'next'
+import type { MoneriaProduct, MoneriaSectionConfig } from '@/lib/moneria'
+import { DEFAULT_CONFIG } from '@/lib/moneria'
 
 export const metadata: Metadata = {
     title: 'La Guaca | Streetwear — Montería, Colombia',
@@ -31,7 +34,7 @@ export default async function HomePage() {
     const supabase = await createClient()
 
     // Cargar en paralelo; si una petición falla, el resto sigue mostrándose (no se cae la página)
-    const [featuredRes, categoriesRes, configRes] = await Promise.allSettled([
+    const [featuredRes, categoriesRes, configRes, moneriaProductsRes, moneriaCfgRes] = await Promise.allSettled([
         supabase
             .from('products')
             .select('*, images:product_images(*), variants:product_variants(*)')
@@ -49,11 +52,23 @@ export default async function HomePage() {
             .select('*')
             .eq('id', 1)
             .single(),
+        supabase
+            .from('moneria_products')
+            .select('*')
+            .eq('is_active', true)
+            .order('created_at', { ascending: false }),
+        supabase
+            .from('moneria_section_config')
+            .select('*')
+            .eq('id', 1)
+            .single(),
     ])
 
     const featured: any[] = featuredRes.status === 'fulfilled' ? (featuredRes.value.data || []) : []
     const categories: any[] = categoriesRes.status === 'fulfilled' ? (categoriesRes.value.data || []) : []
     const config = configRes.status === 'fulfilled' ? (configRes.value.data as any) : null
+    const moneriaProducts: MoneriaProduct[] = moneriaProductsRes.status === 'fulfilled' ? (moneriaProductsRes.value.data || []) : []
+    const moneriaConfig: MoneriaSectionConfig = moneriaCfgRes.status === 'fulfilled' && moneriaCfgRes.value.data ? (moneriaCfgRes.value.data as MoneriaSectionConfig) : DEFAULT_CONFIG
 
     return (
         <>
@@ -68,6 +83,9 @@ export default async function HomePage() {
             {featured && featured.length > 0 && (
                 <EditorialGrid products={featured} />
             )}
+
+            {/* ═══ MONERÍA DROP ═══ */}
+            <MoneriaDropSection products={moneriaProducts} config={moneriaConfig} />
 
             {/* ═══ CATEGORÍAS ═══ */}
             {categories && categories.length > 0 && (

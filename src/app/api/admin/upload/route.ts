@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
 
     const file = formData.get('file')
     const folder = (formData.get('folder') as string) || 'admin'
+    const bucketName = (formData.get('bucket') as string) || 'product-images'
     if (!(file instanceof File) || file.size === 0) {
       return NextResponse.json({ error: 'Falta archivo o está vacío' }, { status: 400 })
     }
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Error al procesar el archivo.' }, { status: 500 })
     }
 
-    const { error } = await (supabase as any).storage.from('product-images').upload(path, buf, {
+    const { error } = await (supabase as any).storage.from(bucketName).upload(path, buf, {
       contentType: file.type || (file.name.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg'),
       upsert: true,
     })
@@ -51,11 +52,11 @@ export async function POST(request: NextRequest) {
       console.error('Upload error:', error)
       const msg = error.message || 'Error en el almacenamiento'
       return NextResponse.json(
-        { error: msg.includes('Bucket') || msg.includes('bucket') ? 'Bucket de almacenamiento no configurado. Crea el bucket "product-images" en Supabase Storage.' : msg },
+        { error: msg.includes('Bucket') || msg.includes('bucket') ? `Bucket "${bucketName}" no configurado. Créalo en el dashboard de Supabase Storage.` : msg },
         { status: 500 }
       )
     }
-    const { data } = (supabase as any).storage.from('product-images').getPublicUrl(path)
+    const { data } = (supabase as any).storage.from(bucketName).getPublicUrl(path)
     return NextResponse.json({ url: data.publicUrl })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Error al subir el archivo'
