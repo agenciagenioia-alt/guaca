@@ -1,5 +1,10 @@
 // ─── Tipos Monería Studio ─────────────────────────────────────────────────────
 
+export interface MoneriaVariant {
+  size: string
+  stock: number
+}
+
 export interface MoneriaProduct {
   id: string
   name: string
@@ -7,6 +12,11 @@ export interface MoneriaProduct {
   price: number
   image_url: string
   second_image_url: string | null
+  /** URLs adicionales de galería (sin incluir image_url) */
+  images: string[]
+  /** Variantes con stock por talla — reemplaza el array de sizes simple */
+  variants: MoneriaVariant[]
+  /** @deprecated usar variants */
   sizes: string[]
   is_active: boolean
   is_featured: boolean

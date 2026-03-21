@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import type { MoneriaProduct } from '@/lib/moneria'
 import { formatCOP } from '@/lib/utils'
@@ -22,7 +23,10 @@ export function MoneriaProductCard({ product, index = 0 }: MoneriaProductCardPro
 
   const hasSecond = Boolean(product.second_image_url)
 
-  const sizes = Array.isArray(product.sizes) ? product.sizes : []
+  // Usar variants si existen, sino sizes legacy
+  const variants = Array.isArray(product.variants) && product.variants.length > 0
+    ? product.variants
+    : (Array.isArray(product.sizes) ? product.sizes.map((s) => ({ size: s, stock: 1 })) : [])
 
   return (
     <motion.article
@@ -88,7 +92,7 @@ export function MoneriaProductCard({ product, index = 0 }: MoneriaProductCardPro
           MONERÍA
         </div>
 
-        {/* Botón VER DETALLES en hover */}
+        {/* Botón VER DETALLES en hover — Link real */}
         <motion.div
           initial={false}
           animate={{ y: hovered ? 0 : '100%', opacity: hovered ? 1 : 0 }}
@@ -96,7 +100,8 @@ export function MoneriaProductCard({ product, index = 0 }: MoneriaProductCardPro
           className="absolute bottom-0 left-0 right-0 z-10"
           style={{ borderRadius: 0 }}
         >
-          <div
+          <Link
+            href={`/moneria/${product.id}`}
             className="w-full flex items-center justify-center"
             style={{
               height: 44,
@@ -108,11 +113,11 @@ export function MoneriaProductCard({ product, index = 0 }: MoneriaProductCardPro
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
               borderRadius: 0,
-              cursor: 'default',
+              textDecoration: 'none',
             }}
           >
             VER DETALLES
-          </div>
+          </Link>
         </motion.div>
       </div>
 
@@ -142,19 +147,20 @@ export function MoneriaProductCard({ product, index = 0 }: MoneriaProductCardPro
         </p>
 
         {/* Tallas */}
-        {sizes.length > 0 && (
+        {variants.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {sizes.map((size) => (
+            {variants.map(({ size, stock }) => (
               <span
                 key={size}
                 style={{
                   fontFamily: MONO,
                   fontSize: 10,
-                  border: `1px solid ${TEXT_MAIN}`,
-                  color: TEXT_MAIN,
+                  border: `1px solid ${stock > 0 ? TEXT_MAIN : 'rgba(232,230,225,0.25)'}`,
+                  color: stock > 0 ? TEXT_MAIN : 'rgba(232,230,225,0.3)',
                   padding: '2px 6px',
                   borderRadius: 0,
                   letterSpacing: '0.05em',
+                  textDecoration: stock <= 0 ? 'line-through' : 'none',
                 }}
               >
                 {size}

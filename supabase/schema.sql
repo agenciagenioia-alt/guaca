@@ -399,6 +399,10 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
+-- Columnas adicionales para variantes y galería de imágenes
+ALTER TABLE moneria_products ADD COLUMN IF NOT EXISTS variants jsonb DEFAULT '[]';
+ALTER TABLE moneria_products ADD COLUMN IF NOT EXISTS images text[] DEFAULT '{}';
+
 -- Bucket para imágenes de Monería
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('moneria-products', 'moneria-products', true)
