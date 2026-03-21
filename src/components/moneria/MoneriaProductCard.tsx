@@ -38,91 +38,91 @@ export function MoneriaProductCard({ product, index = 0 }: MoneriaProductCardPro
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Imagen */}
-      <div
-        className="relative overflow-hidden"
-        style={{ aspectRatio: '3/4', borderRadius: 0 }}
-      >
-        {/* Imagen principal */}
-        <Image
-          src={product.image_url}
-          alt={product.name}
-          fill
-          sizes="(max-width: 768px) 50vw, 25vw"
-          className="object-cover transition-transform duration-500 ease-out"
-          style={{
-            transform: hovered && !hasSecond ? 'scale(1.03)' : 'scale(1)',
-            opacity: hovered && hasSecond ? 0 : 1,
-            transition: 'opacity 400ms ease, transform 400ms ease',
-          }}
-          unoptimized={product.image_url.includes('supabase.co')}
-        />
-
-        {/* Imagen hover */}
-        {hasSecond && product.second_image_url && (
+      {/* Imagen — todo el bloque es clickeable */}
+      <Link href={`/moneria/${product.id}`} style={{ display: 'block', textDecoration: 'none' }}>
+        <div
+          className="relative overflow-hidden"
+          style={{ aspectRatio: '3/4', borderRadius: 0 }}
+        >
+          {/* Imagen principal */}
           <Image
-            src={product.second_image_url}
-            alt={`${product.name} – vista 2`}
+            src={product.image_url}
+            alt={product.name}
             fill
             sizes="(max-width: 768px) 50vw, 25vw"
-            className="object-cover absolute inset-0"
+            className="object-cover transition-transform duration-500 ease-out"
             style={{
-              opacity: hovered ? 1 : 0,
-              transition: 'opacity 400ms ease',
+              transform: hovered && !hasSecond ? 'scale(1.03)' : 'scale(1)',
+              opacity: hovered && hasSecond ? 0 : 1,
+              transition: 'opacity 400ms ease, transform 400ms ease',
             }}
-            unoptimized={product.second_image_url.includes('supabase.co')}
+            unoptimized={product.image_url.includes('supabase.co')}
           />
-        )}
 
-        {/* Badge MONERÍA */}
-        <div
-          className="absolute top-0 left-0 z-10"
-          style={{
-            background: ACCENT,
-            color: '#0D0D0D',
-            fontFamily: MONO,
-            fontSize: 9,
-            fontWeight: 700,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            padding: '4px 8px',
-            borderRadius: 0,
-          }}
-        >
-          MONERÍA
-        </div>
+          {/* Imagen hover */}
+          {hasSecond && product.second_image_url && (
+            <Image
+              src={product.second_image_url}
+              alt={`${product.name} – vista 2`}
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              className="object-cover absolute inset-0"
+              style={{
+                opacity: hovered ? 1 : 0,
+                transition: 'opacity 400ms ease',
+              }}
+              unoptimized={product.second_image_url.includes('supabase.co')}
+            />
+          )}
 
-        {/* Botón VER DETALLES en hover — Link real */}
-        <motion.div
-          initial={false}
-          animate={{ y: hovered ? 0 : '100%', opacity: hovered ? 1 : 0 }}
-          transition={{ duration: 0.28, ease: 'easeOut' }}
-          className="absolute bottom-0 left-0 right-0 z-10"
-          style={{ borderRadius: 0 }}
-        >
-          <Link
-            href={`/moneria/${product.id}`}
-            className="w-full flex items-center justify-center"
+          {/* Badge MONERÍA */}
+          <div
+            className="absolute top-0 left-0 z-10"
             style={{
-              height: 44,
-              background: TEXT_MAIN,
-              color: '#111110',
-              fontFamily: 'var(--font-space-grotesk, system-ui, sans-serif)',
-              fontSize: 11,
-              fontWeight: 600,
+              background: ACCENT,
+              color: '#0D0D0D',
+              fontFamily: MONO,
+              fontSize: 9,
+              fontWeight: 700,
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
+              padding: '4px 8px',
               borderRadius: 0,
-              textDecoration: 'none',
             }}
           >
-            VER DETALLES
-          </Link>
-        </motion.div>
-      </div>
+            MONERÍA
+          </div>
+
+          {/* Overlay VER DETALLES en hover */}
+          <motion.div
+            initial={false}
+            animate={{ y: hovered ? 0 : '100%', opacity: hovered ? 1 : 0 }}
+            transition={{ duration: 0.28, ease: 'easeOut' }}
+            className="absolute bottom-0 left-0 right-0 z-10"
+            style={{ borderRadius: 0 }}
+          >
+            <div
+              className="w-full flex items-center justify-center"
+              style={{
+                height: 44,
+                background: TEXT_MAIN,
+                color: '#111110',
+                fontFamily: 'var(--font-space-grotesk, system-ui, sans-serif)',
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+              }}
+            >
+              VER DETALLES
+            </div>
+          </motion.div>
+        </div>
+      </Link>
 
       {/* Info */}
-      <div style={{ padding: 16 }}>
+      <Link href={`/moneria/${product.id}`} style={{ display: 'block', textDecoration: 'none' }}>
+        <div style={{ padding: 16 }}>
         <p
           style={{
             fontFamily: 'var(--font-space-grotesk, system-ui, sans-serif)',
@@ -168,7 +168,8 @@ export function MoneriaProductCard({ product, index = 0 }: MoneriaProductCardPro
             ))}
           </div>
         )}
-      </div>
+        </div>
+      </Link>
     </motion.article>
   )
 }
