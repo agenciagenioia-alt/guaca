@@ -52,12 +52,12 @@ export default async function HomePage() {
             .select('*')
             .eq('id', 1)
             .single(),
-        supabase
+        (supabase as any)
             .from('moneria_products')
             .select('*')
             .eq('is_active', true)
             .order('created_at', { ascending: false }),
-        supabase
+        (supabase as any)
             .from('moneria_section_config')
             .select('*')
             .eq('id', 1)
@@ -67,8 +67,8 @@ export default async function HomePage() {
     const featured: any[] = featuredRes.status === 'fulfilled' ? (featuredRes.value.data || []) : []
     const categories: any[] = categoriesRes.status === 'fulfilled' ? (categoriesRes.value.data || []) : []
     const config = configRes.status === 'fulfilled' ? (configRes.value.data as any) : null
-    const moneriaProducts: MoneriaProduct[] = moneriaProductsRes.status === 'fulfilled' ? (moneriaProductsRes.value.data || []) : []
-    const moneriaConfig: MoneriaSectionConfig = moneriaCfgRes.status === 'fulfilled' && moneriaCfgRes.value.data ? (moneriaCfgRes.value.data as MoneriaSectionConfig) : DEFAULT_CONFIG
+    const moneriaProducts: MoneriaProduct[] = moneriaProductsRes.status === 'fulfilled' ? ((moneriaProductsRes.value as any).data || []) : []
+    const moneriaConfig: MoneriaSectionConfig = moneriaCfgRes.status === 'fulfilled' && (moneriaCfgRes.value as any).data ? ((moneriaCfgRes.value as any).data as MoneriaSectionConfig) : DEFAULT_CONFIG
 
     return (
         <>
