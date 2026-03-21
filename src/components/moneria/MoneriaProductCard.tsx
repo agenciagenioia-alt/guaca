@@ -140,7 +140,7 @@ export function MoneriaProductCard({ product, index = 0 }: MoneriaProductCardPro
             fontFamily: 'var(--font-space-grotesk, system-ui, sans-serif)',
             fontSize: 13,
             color: ACCENT,
-            marginBottom: sizes.length > 0 ? 10 : 0,
+            marginBottom: variants.length > 0 ? 10 : 0,
           }}
         >
           {formatCOP(product.price)}
